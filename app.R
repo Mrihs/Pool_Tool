@@ -53,6 +53,11 @@ load_data <- function(folder_path = "Questions") {
 Data <- load_data()
 
 
+# Select selectable Variables
+Variable_selection <- select(Data, -A:-D_cor)
+Variable_selection <- colnames(Variable_selection)
+
+
 
 
 
@@ -73,11 +78,13 @@ ui <- fluidPage(
   # Sidebar with file selection
   sidebarLayout(
     sidebarPanel(
-      # Dropdown zur Auswahl einer Datei aus data_list
-      # selectInput("file_select",
-      #             "Select a file to view:",
-      #             choices = unique(Data$Questiontype),  # Dateinamen aus data_list als Auswahlmöglichkeiten
-      #             selected = unique(Data$Questiontype)[1]),  # Standardmäßig die erste Datei auswählen
+      checkboxGroupInput(
+        inputId = "Variable_Selection", label = "Select Vriables to display", choices = Variable_selection, selected = Variable_selection), 
+      #Dropdown zur Auswahl einer Datei aus data_list
+      selectInput("file_select",
+                  "Select a file to view:",
+                  choices = unique(Data$Type),  # Dateinamen aus data_list als Auswahlmöglichkeiten
+                  selected = unique(Data$Type)), # Standardmäßig die erste Datei auswählen
       
       # # Optionaler Slider für andere UI-Komponenten
       # sliderInput("bins",
@@ -104,27 +111,43 @@ ui <- fluidPage(
 
 
 #################### 3. Define Server Logic ####################
+#################### 3. Define Server Logic ####################
 server <- function(input, output) {
   
   output$data_table <- renderTable({
-    # Filtere nach ausgewähltem Dateinamen in der source_file-Spalte
+    # Erstelle eine neue DataFrame für die farbigen Antworten
+    colored_data <- Data %>%
+      rowwise() %>%
+      mutate(
+        A = ifelse((Type == "A" & A_type_cor == "a") | (Type == "K" & A_cor == TRUE),
+                   paste0("<span style='color: green;'>", A, "</span>"),
+                   paste0("<span style='color: red;'>", A, "</span>")),
+        B = ifelse((Type == "A" & A_type_cor == "b") | (Type == "K" & B_cor == TRUE),
+                   paste0("<span style='color: green;'>", B, "</span>"),
+                   paste0("<span style='color: red;'>", B, "</span>")),
+        C = ifelse((Type == "A" & A_type_cor == "c") | (Type == "K" & C_cor == TRUE),
+                   paste0("<span style='color: green;'>", C, "</span>"),
+                   paste0("<span style='color: red;'>", C, "</span>")),
+        D = ifelse((Type == "A" & A_type_cor == "d") | (Type == "K" & D_cor == TRUE),
+                   paste0("<span style='color: green;'>", D, "</span>"),
+                   paste0("<span style='color: red;'>", D, "</span>")),
+        E = ifelse((Type == "A" & A_type_cor == "e") | (Type == "K" & is.na(E)),
+                   NA,
+                   ifelse((Type == "A" & A_type_cor == "e"),
+                          paste0("<span style='color: green;'>", E, "</span>"),
+                          paste0("<span style='color: red;'>", E, "</span>")))
+      ) %>%
+      ungroup() %>%
+      select(ID, Type, Question, A, B, C, D, E)
     
-    selected_data <- select(Data, Question_ID, Questiontype, Question, A, B, C, D, E)
-
-
-    head(selected_data)  # Nur die ersten Zeilen anzeigen
-  })
-  
-  # Beispielplot (wird nicht von data_list beeinflusst)
-  output$distPlot <- renderPlot({
-    x <- faithful[, 2]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    hist(x, breaks = bins, col = 'darkgray', border = 'white',
-         xlab = 'Waiting time to next eruption (in mins)',
-         main = 'Histogram of waiting times')
-  })
+    # Konvertiere die Tabelle in HTML
+    htmlTable::htmlTable(as.data.frame(colored_data), 
+                         align = "l",
+                         css.cell = "padding: 5px;") # Optionales CSS für bessere Lesbarkeit
+  }, sanitize.text.function = function(x) x)  # Erlaube HTML-Rendering
 }
+
+
 
 # Run the application
 shinyApp(ui = ui, server = server)
