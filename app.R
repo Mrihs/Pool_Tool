@@ -54,7 +54,7 @@ Data <- load_data()
 
 
 # Select selectable Variables
-Variable_selection <- select(Data, -A:-D_cor)
+Variable_selection <- select(Data, -ID, -Type, -Version, -Question:-D_cor)
 Variable_selection <- colnames(Variable_selection)
 
 
@@ -79,7 +79,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       checkboxGroupInput(
-        inputId = "Variable_Selection", label = "Select Vriables to display", choices = Variable_selection, selected = Variable_selection), 
+        inputId = "Var_Select", label = "Select Vriables to display", choices = Variable_selection, selected = Variable_selection), 
       #Dropdown zur Auswahl einer Datei aus data_list
       selectInput("file_select",
                   "Select a file to view:",
@@ -110,11 +110,13 @@ ui <- fluidPage(
 
 
 
-#################### 3. Define Server Logic ####################
-#################### 3. Define Server Logic ####################
+#################### 4. Define Server Logic ####################
 server <- function(input, output) {
   
   output$data_table <- renderTable({
+    # Auswahl der Variablen basierend auf der Checkbox-Auswahl
+    selected_vars <- c("ID", "Type", "Question", input$Var_Select) # IDs und Typen immer einbeziehen
+    
     # Erstelle eine neue DataFrame für die farbigen Antworten
     colored_data <- Data %>%
       rowwise() %>%
@@ -138,7 +140,7 @@ server <- function(input, output) {
                           paste0("<span style='color: red;'>", E, "</span>")))
       ) %>%
       ungroup() %>%
-      select(ID, Type, Question, A, B, C, D, E)
+      select(ID, Type, Question, A, B, C, D, E, all_of(selected_vars))
     
     # Konvertiere die Tabelle in HTML
     htmlTable::htmlTable(as.data.frame(colored_data), 
@@ -149,5 +151,12 @@ server <- function(input, output) {
 
 
 
-# Run the application
+
+
+
+
+
+
+
+#################### 5. Load Questions ####################
 shinyApp(ui = ui, server = server)
