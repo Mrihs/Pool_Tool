@@ -1,6 +1,7 @@
 #################### 1. Load Packages ####################
 library(shiny)
 library(shinythemes)
+library(shinyBS)
 library(readxl)
 library(readr)
 library(dplyr)
@@ -78,20 +79,33 @@ ui <- fluidPage(
   # Sidebar with file selection
   sidebarLayout(
     sidebarPanel(
-      checkboxGroupInput(
-        inputId = "Var_Select", label = "Select Vriables to display", choices = Variable_selection, selected = Variable_selection), 
-      #Dropdown zur Auswahl einer Datei aus data_list
-      selectInput("file_select",
-                  "Select a file to view:",
-                  choices = unique(Data$Type),  # Dateinamen aus data_list als Auswahlmöglichkeiten
-                  selected = unique(Data$Type)), # Standardmäßig die erste Datei auswählen
-      
-      # # Optionaler Slider für andere UI-Komponenten
-      # sliderInput("bins",
-      #             "Number of bins (Example):",
-      #             min = 1,
-      #             max = 50,
-      #             value = 30)
+      bsCollapse(id = "collapseVariables",
+                 bsCollapsePanel("Select Variables to Display", 
+        checkboxGroupInput(
+          inputId = "Var_Select",
+          label = "",
+          choices = Variable_selection,
+          selected = Variable_selection
+          )
+        )
+      ),
+      bsCollapse(id = "collapseFilters",
+                 bsCollapsePanel("Filter Data", 
+        #Dropdown zur Auswahl einer Datei aus data_list
+        selectInput("file_select",
+                    "Question-Type:",
+                    choices = unique(Data$Type),  # Dateinamen aus data_list als Auswahlmöglichkeiten
+                    selected = unique(Data$Type)
+                    ) # Standardmäßig die erste Datei auswählen
+        
+        # # Optionaler Slider für andere UI-Komponenten
+        # sliderInput("bins",
+        #             "Number of bins (Example):",
+        #             min = 1,
+        #             max = 50,
+        #             value = 30)
+      )
+    )
     ),
 
     mainPanel(
@@ -158,5 +172,5 @@ server <- function(input, output) {
 
 
 
-#################### 5. Load Questions ####################
+#################### 5. Load Application ####################
 shinyApp(ui = ui, server = server)
