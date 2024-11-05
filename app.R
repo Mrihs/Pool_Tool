@@ -92,10 +92,10 @@ ui <- fluidPage(
       bsCollapse(id = "collapseFilters",
                  bsCollapsePanel("Filter Data", 
         #Dropdown zur Auswahl einer Datei aus data_list
-        selectInput("file_select",
+        selectInput("Type_Select",
                     "Question-Type:",
-                    choices = unique(Data$Type),  # Dateinamen aus data_list als Auswahlmöglichkeiten
-                    selected = unique(Data$Type)
+                    choices = c("None", unique(Data$Type)),  # Dateinamen aus data_list als Auswahlmöglichkeiten
+                    selected = "None"
                     ) # Standardmäßig die erste Datei auswählen
         
         # # Optionaler Slider für andere UI-Komponenten
@@ -130,6 +130,11 @@ server <- function(input, output) {
   output$data_table <- renderTable({
     # Auswahl der Variablen basierend auf der Checkbox-Auswahl
     selected_vars <- c("ID", "Type", "Question", input$Var_Select) # IDs und Typen immer einbeziehen
+    
+    if(input$Type_Select!="None")
+    {Data <- filter(Data, Type==input$Type_Select)
+    }
+
     
     # Erstelle eine neue DataFrame für die farbigen Antworten
     colored_data <- Data %>%
