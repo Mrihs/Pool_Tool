@@ -5,6 +5,7 @@ library(shinyBS)
 library(readxl)
 library(readr)
 library(dplyr)
+library(DT)
 
 
 
@@ -109,7 +110,7 @@ ui <- fluidPage(
     ),
 
     mainPanel(
-      tableOutput("data_table"),
+      DTOutput("data_table"),
     )
   )
 )
@@ -127,7 +128,7 @@ ui <- fluidPage(
 #################### 4. Define Server Logic ####################
 server <- function(input, output) {
   
-  output$data_table <- renderTable({
+  output$data_table <- renderDT({
     # Auswahl der Variablen basierend auf der Checkbox-Auswahl
     selected_vars <- c("ID", "Type", "Question", input$Var_Select) # IDs und Typen immer einbeziehen
     
@@ -135,7 +136,6 @@ server <- function(input, output) {
     {Data <- filter(Data, Type==input$Type_Select)
     }
 
-    
     # Erstelle eine neue DataFrame für die farbigen Antworten
     colored_data <- Data %>%
       rowwise() %>%
@@ -161,10 +161,10 @@ server <- function(input, output) {
       ungroup() %>%
       select(ID, Type, Question, A, B, C, D, E, all_of(selected_vars))
     
-    # Konvertiere die Tabelle in HTML
-    htmlTable::htmlTable(as.data.frame(colored_data), 
-                         align = "l",
-                         css.cell = "padding: 5px;") # Optionales CSS für bessere Lesbarkeit
+    datatable(as.data.frame(colored_data), 
+              escape = FALSE,  # Erlaube HTML-Rendering
+              editable = TRUE,  # Tabelle ist editierbar
+              options = list(pageLength = 10))  # Optionen für die Tabelle
   }, sanitize.text.function = function(x) x)  # Erlaube HTML-Rendering
 }
 
