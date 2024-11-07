@@ -2,6 +2,7 @@
 library(shiny)
 library(shinythemes)
 library(shinyBS)
+library(shinyjs)
 library(readxl)
 library(readr)
 library(dplyr)
@@ -37,6 +38,9 @@ ui <- fluidPage(
   theme = shinytheme("cerulean"),
   titlePanel("Fragen Editor"),
   
+  # Nutze shinyjs
+  useShinyjs(),
+  
   sidebarLayout(
     sidebarPanel(
       actionButton("prev_question", "Vorherige Frage"),
@@ -46,66 +50,55 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      # Zeile für ID und Version (nebeneinander)
+      # Zeile für ID, Version, Type und State
       fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",  # Stil für grauen Hintergrund, Innenabstand und abgerundete Ecken
+        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
         column(2, textInput("question_id", "ID", value = "", width = "100%")),
         column(2, textInput("question_version", "Version", value = "", width = "100%")),
-        column(4, textInput("type", "Type", value = "", width = "100%")),
+        column(4, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
         column(4, textInput("state", "State", value = "", width = "100%"))
       ),
       
+      # Frage über die gesamte Zeile
       fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",  # Stil für grauen Hintergrund, Innenabstand und abgerundete Ecken
-        # Frage über die gesamte Zeile
-        textAreaInput("question_text", "Frage", value = "", width = "100%"),
-        
-        # Spalten für Antwortoptionen A bis E und Korrektheit
-        fluidRow(
-          # Spalte für Optionen A bis E (untereinander)
-          column(10,  # 75% Breite
-                 textInput("option_a", "A", value = "", width = "100%"),
-                 textInput("option_b", "B", value = "", width = "100%"),
-                 textInput("option_c", "C", value = "", width = "100%"),
-                 textInput("option_d", "D", value = "", width = "100%"),
-                 textInput("option_e", "E", value = "", width = "100%")
-          ),
-          # Spalte für Korrektheit (A_type_cor und A_cor bis D_cor, untereinander)
-          column(2,  # 25% Breite
-                 textInput("a_type_cor", "Correct Answer", value = "", width = "100%"),
-                 textInput("a_cor", "A correct?", value = "", width = "100%"),
-                 textInput("b_cor", "B correct?", value = "", width = "100%"),
-                 textInput("c_cor", "C correct?", value = "", width = "100%"),
-                 textInput("d_cor", "D correct?", value = "", width = "100%")
-          )
-          )
+        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+        textAreaInput("question_text", "Frage", value = "", width = "100%")
       ),
       
-      
-      # Spalten für Antwortoptionen A bis E und Korrektheit
+      # Antwortoptionen und Korrektheit
       fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",  # Stil für grauen Hintergrund, Innenabstand und abgerundete Ecken
+        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
         
-        # Spalte für Optionen A bis E (untereinander)
-        column(4,  # 75% Breite
-               textInput("year", "Jahr", value = "", width = "100%")
+        # Optionen A bis E
+        column(9, 
+               textInput("option_a", "A", value = "", width = "100%"),
+               textInput("option_b", "B", value = "", width = "100%"),
+               textInput("option_c", "C", value = "", width = "100%"),
+               textInput("option_d", "D", value = "", width = "100%"),
+               textInput("option_e", "E", value = "", width = "100%")
         ),
-        column(4,  # 75% Breite
-               textInput("week", "Woche", value = "", width = "100%")
-        ),
-        column(4,  # 75% Breite
-               textInput("chapter", "Kapitel", value = "", width = "100%")
-               )
+        
+        # Korrektheit für A_cor bis D_cor und A_type_cor
+        column(3,
+               selectInput("a_type_cor", "Correct Answer", choices = c("A", "B", "C", "D", "E"), selected = NULL, width = "100%"),
+               selectInput("a_cor", "A correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
+               selectInput("b_cor", "B correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
+               selectInput("c_cor", "C correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
+               selectInput("d_cor", "D correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
+        )
+      ),
+      
+      # Weitere Felder für Jahr, Woche, Kapitel, Tags und Bemerkungen
+      fluidRow(
+        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+        column(4, textInput("year", "Jahr", value = "", width = "100%")),
+        column(4, textInput("week", "Woche", value = "", width = "100%")),
+        column(4, textInput("chapter", "Kapitel", value = "", width = "100%"))
       ),
       fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",  # Stil für grauen Hintergrund, Innenabstand und abgerundete Ecken
-        
-        column(6,  # 75% Breite
-               textInput("tags", "Tags", value = "", width = "100%")
-        ),
-        column(6,  # 75% Breite
-               textInput("remarks", "Remarks", value = "", width = "100%")
-        ) 
+        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+        column(6, textInput("tags", "Tags", value = "", width = "100%")),
+        column(6, textInput("remarks", "Remarks", value = "", width = "100%"))
       )
     )
   )
@@ -119,31 +112,62 @@ server <- function(input, output, session) {
   questions_data <- reactiveVal(Data)
   current_index <- reactiveVal(1)
   
-  # Funktion, um die Frage anzuzeigen
+  # Funktion zur Anzeige der Frage
   observeEvent(current_index(), {
     idx <- current_index()
     question <- questions_data()[idx, ]
     
+    # Initialisieren der Input-Werte mit den Daten der aktuellen Frage
     updateTextInput(session, "question_id", value = question$ID)
     updateTextInput(session, "question_version", value = question$Version)
-    updateTextInput(session, "type", value = question$Type)
+    updateSelectInput(session, "type", selected = question$Type)
     updateTextAreaInput(session, "question_text", value = question$Question)
     updateTextInput(session, "option_a", value = question$A)
     updateTextInput(session, "option_b", value = question$B)
     updateTextInput(session, "option_c", value = question$C)
     updateTextInput(session, "option_d", value = question$D)
     updateTextInput(session, "option_e", value = question$E)
-    updateTextInput(session, "a_type_cor", value = question$A_type_cor)
-    updateTextInput(session, "a_cor", value = question$A_cor)
-    updateTextInput(session, "b_cor", value = question$B_cor)
-    updateTextInput(session, "c_cor", value = question$C_cor)
-    updateTextInput(session, "d_cor", value = question$D_cor)
+    updateSelectInput(session, "a_type_cor", selected = question$A_type_cor)
+    updateSelectInput(session, "a_cor", selected = question$A_cor)
+    updateSelectInput(session, "b_cor", selected = question$B_cor)
+    updateSelectInput(session, "c_cor", selected = question$C_cor)
+    updateSelectInput(session, "d_cor", selected = question$D_cor)
     updateTextInput(session, "year", value = question$Year)
     updateTextInput(session, "week", value = question$Week)
     updateTextInput(session, "chapter", value = question$Chapter)
     updateTextInput(session, "state", value = question$State)
     updateTextInput(session, "tags", value = question$Tags)
     updateTextInput(session, "remarks", value = question$Remarks)
+  })
+  
+  # Anpassung der Eingabefelder basierend auf dem ausgewählten Typ
+  observeEvent(input$type, {
+    if (input$type == "A") {
+      # Deaktiviere Korrektheitsfelder (a_cor bis e_cor)
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
+        shinyjs::disable(id)
+      })
+      
+      # Aktiviert das Dropdown für die korrekte Antwort (a_type_cor)
+      shinyjs::enable("a_type_cor")
+      updateSelectInput(session, "a_type_cor", choices = c("A", "B", "C", "D", "E"), selected = NULL)
+      
+      # Setze Korrektheitsfelder zurück
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
+        updateSelectInput(session, id, selected = NULL)
+      })
+      
+    } else if (input$type == "K") {
+      # Deaktiviere das Dropdown für die korrekte Antwort (a_type_cor)
+      shinyjs::disable("a_type_cor")
+      updateSelectInput(session, "a_type_cor", selected = NULL)
+      
+      # Aktiviere Korrektheitsfelder (a_cor bis e_cor)
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
+        shinyjs::enable(id)
+        updateSelectInput(session, id, choices = c("TRUE", "FALSE"), selected = NULL)
+      })
+    }
   })
   
   # Nächste Frage anzeigen
