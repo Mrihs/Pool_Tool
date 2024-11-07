@@ -161,8 +161,8 @@ server <- function(input, output, session) {
   observeEvent(c(current_index(), input$state_filter), {
     idx <- current_index()
     
-    # Wählen Sie immer die erste Frage aus der nicht gefilterten Liste
-    question <- filtered_data()[1, ]  # Hier wird die erste Frage aus den gefilterten Daten genommen
+    # Wählen Sie immer die Frage anhand des Index aus den gefilterten Daten
+    question <- filtered_data()[idx, ]  # Hier wird die Frage entsprechend dem aktuellen Index geladen
     
     # Initialisieren der Input-Werte mit den Daten der aktuellen Frage
     updateTextInput(session, "question_id", value = question$ID)
@@ -258,6 +258,9 @@ server <- function(input, output, session) {
   observeEvent(input$next_question, {
     if (current_index() < total_questions()) {
       current_index(current_index() + 1)
+    } else {
+      # Wenn es die letzte Frage ist, zurück zur ersten Frage
+      current_index(1)
     }
   })
   
@@ -265,6 +268,9 @@ server <- function(input, output, session) {
   observeEvent(input$prev_question, {
     if (current_index() > 1) {
       current_index(current_index() - 1)
+    } else {
+      # Wenn es die erste Frage ist, zurück zur letzten Frage
+      current_index(total_questions())
     }
   })
   
