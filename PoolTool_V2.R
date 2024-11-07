@@ -108,11 +108,12 @@ ui <- fluidPage(
       
       # Korrektheit für A_cor bis D_cor und A_type_cor
       column(3,
-             selectInput("a_type_cor", "Correct Answer", choices = c("A", "B", "C", "D", "E"), selected = NULL, width = "100%"),
              selectInput("a_cor", "A correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
              selectInput("b_cor", "B correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
              selectInput("c_cor", "C correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-             selectInput("d_cor", "D correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
+             selectInput("d_cor", "D correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
+             selectInput("a_type_cor", "Correct Answer", choices = c("A", "B", "C", "D", "E"), selected = NULL, width = "100%")
+             
       )
     ),
     
@@ -184,6 +185,9 @@ server <- function(input, output, session) {
     updateTextInput(session, "state", value = question$State)
     updateTextInput(session, "tags", value = question$Tags)
     updateTextInput(session, "remarks", value = question$Remarks)
+    
+    # Update the border colors based on question type
+    update_border_colors(question)
   })
   
   # Anpassung der Eingabefelder basierend auf dem ausgewählten Typ
@@ -203,7 +207,6 @@ server <- function(input, output, session) {
       lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
         updateSelectInput(session, id, selected = NULL)
       })
-      
     } else if (input$type == "K") {
       # Deaktiviere das Dropdown für die korrekte Antwort (a_type_cor)
       shinyjs::disable("a_type_cor")
@@ -216,11 +219,40 @@ server <- function(input, output, session) {
         updateSelectInput(session, id, choices = c("TRUE", "FALSE"), selected = NULL)
       })
     }
+    
+    # Aktualisiere die Rahmenfarben, wenn der Typ geändert wird
+    update_border_colors(filtered_data()[current_index(),])
   })
   
-  
-  
-  
+  # Funktion zur Aktualisierung der Rahmenfarben
+  update_border_colors <- function(question) {
+    # Wenn der Typ A ist
+    if (input$type == "A") {
+      correct_answer <- input$a_type_cor
+      options <- c("A", "B", "C", "D", "E")
+      
+      # Umrandung der Optionen setzen
+      lapply(options, function(option) {
+        color <- ifelse(correct_answer == option, "green", "red")
+        shinyjs::runjs(sprintf('$("#option_%s").css("border-color", "%s")', tolower(option), color))
+      })
+    }
+    
+    # Wenn der Typ K ist
+    if (input$type == "K") {
+      # Umrandung der Optionen setzen basierend auf a_cor bis d_cor
+      for (i in 1:4) {
+        option <- c("a", "b", "c", "d")[i]
+        correct_value <- switch(option,
+                                "a" = input$a_cor,
+                                "b" = input$b_cor,
+                                "c" = input$c_cor,
+                                "d" = input$d_cor)
+        color <- ifelse(correct_value == "TRUE", "green", "red")
+        shinyjs::runjs(sprintf('$("#option_%s").css("border-color", "%s")', option, color))
+      }
+    }
+  }
   
   # Nächste Frage anzeigen
   observeEvent(input$next_question, {
@@ -264,19 +296,18 @@ server <- function(input, output, session) {
     
     # Speichern der aktualisierten Daten
     questions_data(updated_data)
-    showNotification("Änderungen gespeichert!", type = "message")
+    showNotification("Änderungen wurden gespeichert!", type = "message")
   })
   
-  # Aktualisierte Daten herunterladen
-  output$download_data <- downloadHandler(
-    filename = function() {
-      paste("Updated_Questions-", Sys.Date(), ".xlsx", sep = "")
-    },
-    content = function(file) {
-      write_xlsx(questions_data(), file)
-    }
-  )
+  # Aktualisiere die Rahmenfarben, wenn Eingaben geändert werden
+  observeEvent(input$a_type_cor, { update_border_colors(filtered_data()[current_index(),]) })
+  observeEvent(input$a_cor, { update_border_colors(filtered_data()[current_index(),]) })
+  observeEvent(input$b_cor, { update_border_colors(filtered_data()[current_index(),]) })
+  observeEvent(input$c_cor, { update_border_colors(filtered_data()[current_index(),]) })
+  observeEvent(input$d_cor, { update_border_colors(filtered_data()[current_index(),]) })
 }
+
+
 
 
 
