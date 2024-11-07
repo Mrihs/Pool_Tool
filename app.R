@@ -161,7 +161,7 @@ server <- function(input, output) {
       ungroup() %>%
       select(ID, Type, Question, A, B, C, D, E, all_of(selected_vars))
     
-    datatable(as.data.frame(colored_data), 
+    datatable(as.data.frame(colored_data), filter = "top", #plugins = "select",
               escape = FALSE,  # Erlaube HTML-Rendering
               editable = TRUE,  # Tabelle ist editierbar
               options = list(pageLength = 10))  # Optionen für die Tabelle
