@@ -8,6 +8,10 @@ library(readr)
 library(dplyr)
 library(writexl)
 
+tags$head(tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"))
+
+
+
 
 #################### 2. Load Questions ####################
 # Funktion zum Laden der Fragen
@@ -41,18 +45,28 @@ ui <- fluidPage(
   # Nutze shinyjs
   useShinyjs(),
   
-  sidebarLayout(
-    sidebarPanel(
-      actionButton("prev_question", "Vorherige Frage"),
-      actionButton("next_question", "Nächste Frage"),
-      actionButton("save_changes", "Änderungen speichern"),
-      downloadButton("download_data", "Aktuelle Daten herunterladen")
-    ),
+  fluidRow(
+    style = "background-color: #f0f0f0; padding: 15px; text-align: center;",
+    column(2, actionButton("prev_question", 
+                           label = HTML('<i class="fas fa-arrow-left"></i> Previous'),
+                           style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
+    column(2, actionButton("next_question",
+                           label = HTML('Next <i class="fas fa-arrow-right"></i>'),
+                           style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
+    column(4),  # Leerer Abstand
+    column(2, downloadButton("download_data", "Load", 
+                             style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
+    column(2, actionButton("save_changes",                        
+                           label = HTML('<i class="fas fa-save"></i> Save'),
+                           style = "font-size: 12px; padding: 10px 20px; width: 100%;"))
+  ),
+
     
-    mainPanel(
+  fluidRow(
+    style = "padding: 10px; margin: 10px; border-radius: 5px;",
       # Zeile für ID, Version, Type und State
       fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+        style = "background-color: #f0f0f0; padding: 15px; margin: 10px; border-radius: 5px;",
         column(2, textInput("question_id", "ID", value = "", width = "100%")),
         column(2, textInput("question_version", "Version", value = "", width = "100%")),
         column(4, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
@@ -102,7 +116,7 @@ ui <- fluidPage(
       )
     )
   )
-)
+
 
 
 #################### 4. Shiny Server ####################
