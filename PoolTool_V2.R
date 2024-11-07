@@ -40,18 +40,19 @@ Data <- load_data()
 #################### 3. Shiny UI ####################
 ui <- fluidPage(
   theme = shinytheme("cerulean"),
-  titlePanel("Fragen Editor"),
+  titlePanel("Editor"),
   
   # Nutze shinyjs
   useShinyjs(),
   
   fluidRow(
     style = "background-color: #f0f0f0; padding: 15px; text-align: center;",
-    column(2, actionButton("prev_question", 
-                           label = HTML('<i class="fas fa-arrow-left"></i> Previous'),
+    column(1, actionButton("prev_question", 
+                           label = HTML('<i class="fas fa-arrow-left"></i>'),
                            style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
-    column(2, actionButton("next_question",
-                           label = HTML('Next <i class="fas fa-arrow-right"></i>'),
+    column(1, textOutput("question_counter", inline = TRUE), style = "font-size: 16px; font-weight: bold; text-align: center;"),
+    column(1, actionButton("next_question",
+                           label = HTML('<i class="fas fa-arrow-right"></i>'),
                            style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
     column(4),  # Leerer Abstand
     column(2, downloadButton("download_data", "Load", 
@@ -125,6 +126,15 @@ server <- function(input, output, session) {
   # Speichert die Daten und den aktuellen Index der angezeigten Frage
   questions_data <- reactiveVal(Data)
   current_index <- reactiveVal(1)
+  
+  
+  # Anzahl der Fragen berechnen
+  total_questions <- reactive({ nrow(questions_data()) })
+  
+  # Dynamischer Text für "Frage X von Y"
+  output$question_counter <- renderText({
+    paste(current_index(), "/", total_questions())
+  })
   
   # Funktion zur Anzeige der Frage
   observeEvent(current_index(), {
