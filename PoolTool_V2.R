@@ -61,6 +61,19 @@ ui <- fluidPage(
                            label = HTML('<i class="fas fa-save"></i> Save'),
                            style = "font-size: 12px; padding: 10px 20px; width: 100%;"))
   ),
+  
+  
+  
+  # Ausklappbare Box für "State"-Auswahl
+  fluidRow(
+    column(12, 
+           bsCollapse(id = "state_selector", open = "state", 
+                      bsCollapsePanel("State Filter", 
+                                      selectInput("state_filter", "Select State", choices = unique(Data$State), selected = NULL),
+                                      style = "padding: 10px;")
+           )
+    )
+  ),
 
     
   fluidRow(
@@ -127,9 +140,16 @@ server <- function(input, output, session) {
   questions_data <- reactiveVal(Data)
   current_index <- reactiveVal(1)
   
+  # Filtere die Daten basierend auf der Auswahl im Dropdown "State"
+  filtered_data <- reactive({
+    if (is.null(input$state_filter) || input$state_filter == "") {
+      return(questions_data())  # Keine Filterung, wenn nichts ausgewählt ist
+    }
+    questions_data() %>% filter(State == input$state_filter)
+  })
   
-  # Anzahl der Fragen berechnen
-  total_questions <- reactive({ nrow(questions_data()) })
+  # Anzahl der gefilterten Fragen berechnen
+  total_questions <- reactive({ nrow(filtered_data()) })
   
   # Dynamischer Text für "Frage X von Y"
   output$question_counter <- renderText({
@@ -139,7 +159,7 @@ server <- function(input, output, session) {
   # Funktion zur Anzeige der Frage
   observeEvent(current_index(), {
     idx <- current_index()
-    question <- questions_data()[idx, ]
+    question <- filtered_data()[idx, ]  # Nur gefilterte Daten verwenden
     
     # Initialisieren der Input-Werte mit den Daten der aktuellen Frage
     updateTextInput(session, "question_id", value = question$ID)
@@ -164,39 +184,9 @@ server <- function(input, output, session) {
     updateTextInput(session, "remarks", value = question$Remarks)
   })
   
-  # Anpassung der Eingabefelder basierend auf dem ausgewählten Typ
-  observeEvent(input$type, {
-    if (input$type == "A") {
-      # Deaktiviere Korrektheitsfelder (a_cor bis e_cor)
-      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
-        shinyjs::disable(id)
-      })
-      
-      # Aktiviert das Dropdown für die korrekte Antwort (a_type_cor)
-      shinyjs::enable("a_type_cor")
-      updateSelectInput(session, "a_type_cor", choices = c("A", "B", "C", "D", "E"), selected = NULL)
-      
-      # Setze Korrektheitsfelder zurück
-      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
-        updateSelectInput(session, id, selected = NULL)
-      })
-      
-    } else if (input$type == "K") {
-      # Deaktiviere das Dropdown für die korrekte Antwort (a_type_cor)
-      shinyjs::disable("a_type_cor")
-      updateSelectInput(session, "a_type_cor", selected = NULL)
-      
-      # Aktiviere Korrektheitsfelder (a_cor bis e_cor)
-      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
-        shinyjs::enable(id)
-        updateSelectInput(session, id, choices = c("TRUE", "FALSE"), selected = NULL)
-      })
-    }
-  })
-  
   # Nächste Frage anzeigen
   observeEvent(input$next_question, {
-    if (current_index() < nrow(questions_data())) {
+    if (current_index() < total_questions()) {
       current_index(current_index() + 1)
     }
   })
@@ -211,7 +201,7 @@ server <- function(input, output, session) {
   # Änderungen speichern
   observeEvent(input$save_changes, {
     idx <- current_index()
-    updated_data <- questions_data()
+    updated_data <- filtered_data()
     
     # Aktualisieren der Daten entsprechend der eingegebenen Werte
     updated_data[idx, "Version"] <- input$question_version
@@ -249,6 +239,7 @@ server <- function(input, output, session) {
     }
   )
 }
+
 
 
 #################### 5. Run App ####################
