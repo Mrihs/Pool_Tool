@@ -186,6 +186,42 @@ server <- function(input, output, session) {
     updateTextInput(session, "remarks", value = question$Remarks)
   })
   
+  # Anpassung der Eingabefelder basierend auf dem ausgewählten Typ
+  observeEvent(input$type, {
+    if (input$type == "A") {
+      # Deaktiviere Korrektheitsfelder (a_cor bis d_cor)
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
+        shinyjs::disable(id)
+      })
+      
+      # Aktiviert das Dropdown für die korrekte Antwort (a_type_cor)
+      shinyjs::enable("a_type_cor")
+      shinyjs::enable("option_e")
+      updateSelectInput(session, "a_type_cor", choices = c("A", "B", "C", "D", "E"), selected = NULL)
+      
+      # Setze Korrektheitsfelder zurück
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
+        updateSelectInput(session, id, selected = NULL)
+      })
+      
+    } else if (input$type == "K") {
+      # Deaktiviere das Dropdown für die korrekte Antwort (a_type_cor)
+      shinyjs::disable("a_type_cor")
+      shinyjs::disable("option_e")
+      updateSelectInput(session, "a_type_cor", selected = NULL)
+      
+      # Aktiviere Korrektheitsfelder (a_cor bis e_cor)
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
+        shinyjs::enable(id)
+        updateSelectInput(session, id, choices = c("TRUE", "FALSE"), selected = NULL)
+      })
+    }
+  })
+  
+  
+  
+  
+  
   # Nächste Frage anzeigen
   observeEvent(input$next_question, {
     if (current_index() < total_questions()) {
