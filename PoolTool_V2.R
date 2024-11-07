@@ -74,62 +74,62 @@ ui <- fluidPage(
            )
     )
   ),
-
-    
+  
+  
   fluidRow(
     style = "padding: 10px; margin: 10px; border-radius: 5px;",
-      # Zeile für ID, Version, Type und State
-      fluidRow(
-        style = "background-color: #f0f0f0; padding: 15px; margin: 10px; border-radius: 5px;",
-        column(2, textInput("question_id", "ID", value = "", width = "100%")),
-        column(2, textInput("question_version", "Version", value = "", width = "100%")),
-        column(4, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
-        column(4, textInput("state", "State", value = "", width = "100%"))
+    # Zeile für ID, Version, Type und State
+    fluidRow(
+      style = "background-color: #f0f0f0; padding: 15px; margin: 10px; border-radius: 5px;",
+      column(2, textInput("question_id", "ID", value = "", width = "100%")),
+      column(2, textInput("question_version", "Version", value = "", width = "100%")),
+      column(4, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
+      column(4, textInput("state", "State", value = "", width = "100%"))
+    ),
+    
+    # Frage über die gesamte Zeile
+    fluidRow(
+      style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+      textAreaInput("question_text", "Frage", value = "", width = "100%")
+    ),
+    
+    # Antwortoptionen und Korrektheit
+    fluidRow(
+      style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+      
+      # Optionen A bis E
+      column(9, 
+             textInput("option_a", "A", value = "", width = "100%"),
+             textInput("option_b", "B", value = "", width = "100%"),
+             textInput("option_c", "C", value = "", width = "100%"),
+             textInput("option_d", "D", value = "", width = "100%"),
+             textInput("option_e", "E", value = "", width = "100%")
       ),
       
-      # Frage über die gesamte Zeile
-      fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
-        textAreaInput("question_text", "Frage", value = "", width = "100%")
-      ),
-      
-      # Antwortoptionen und Korrektheit
-      fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
-        
-        # Optionen A bis E
-        column(9, 
-               textInput("option_a", "A", value = "", width = "100%"),
-               textInput("option_b", "B", value = "", width = "100%"),
-               textInput("option_c", "C", value = "", width = "100%"),
-               textInput("option_d", "D", value = "", width = "100%"),
-               textInput("option_e", "E", value = "", width = "100%")
-        ),
-        
-        # Korrektheit für A_cor bis D_cor und A_type_cor
-        column(3,
-               selectInput("a_type_cor", "Correct Answer", choices = c("A", "B", "C", "D", "E"), selected = NULL, width = "100%"),
-               selectInput("a_cor", "A correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-               selectInput("b_cor", "B correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-               selectInput("c_cor", "C correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-               selectInput("d_cor", "D correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
-        )
-      ),
-      
-      # Weitere Felder für Jahr, Woche, Kapitel, Tags und Bemerkungen
-      fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
-        column(4, textInput("year", "Jahr", value = "", width = "100%")),
-        column(4, textInput("week", "Woche", value = "", width = "100%")),
-        column(4, textInput("chapter", "Kapitel", value = "", width = "100%"))
-      ),
-      fluidRow(
-        style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
-        column(6, textInput("tags", "Tags", value = "", width = "100%")),
-        column(6, textInput("remarks", "Remarks", value = "", width = "100%"))
+      # Korrektheit für A_cor bis D_cor und A_type_cor
+      column(3,
+             selectInput("a_type_cor", "Correct Answer", choices = c("A", "B", "C", "D", "E"), selected = NULL, width = "100%"),
+             selectInput("a_cor", "A correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
+             selectInput("b_cor", "B correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
+             selectInput("c_cor", "C correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
+             selectInput("d_cor", "D correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
       )
+    ),
+    
+    # Weitere Felder für Jahr, Woche, Kapitel, Tags und Bemerkungen
+    fluidRow(
+      style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+      column(4, textInput("year", "Jahr", value = "", width = "100%")),
+      column(4, textInput("week", "Woche", value = "", width = "100%")),
+      column(4, textInput("chapter", "Kapitel", value = "", width = "100%"))
+    ),
+    fluidRow(
+      style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+      column(6, textInput("tags", "Tags", value = "", width = "100%")),
+      column(6, textInput("remarks", "Remarks", value = "", width = "100%"))
     )
   )
+)
 
 
 
@@ -157,9 +157,11 @@ server <- function(input, output, session) {
   })
   
   # Funktion zur Anzeige der Frage
-  observeEvent(current_index(), {
+  observeEvent(c(current_index(), input$state_filter), {
     idx <- current_index()
-    question <- filtered_data()[idx, ]  # Nur gefilterte Daten verwenden
+    
+    # Wählen Sie immer die erste Frage aus der nicht gefilterten Liste
+    question <- filtered_data()[1, ]  # Hier wird die erste Frage aus den gefilterten Daten genommen
     
     # Initialisieren der Input-Werte mit den Daten der aktuellen Frage
     updateTextInput(session, "question_id", value = question$ID)
