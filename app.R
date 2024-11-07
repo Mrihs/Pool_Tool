@@ -70,13 +70,14 @@ Variable_selection <- colnames(Variable_selection)
 
 #################### 3. Define UI ####################
 # Define UI for application that displays loaded data
-ui <- fluidPage(
+ui <- navbarPage(
   # Define a theme for the shiny-app
   theme = shinytheme("paper"),
 
   # Define Title of the application
-  titlePanel("Pool-Tool"),
+  "Pool-Tool",
 
+  tabPanel("Datenanzeige",
   # Sidebar with file selection
   sidebarLayout(
     sidebarPanel(
@@ -110,9 +111,18 @@ ui <- fluidPage(
     ),
 
     mainPanel(
-      DTOutput("data_table"),
+      DTOutput("data_table")
     )
-  )
+  )),
+  tabPanel("Zusätzliche Analysen",
+           fluidRow(
+             column(12, 
+                    h3("Analyse-Tools"), 
+                    p("Hier könnten Sie zusätzliche Analysen hinzufügen."),
+                    # Beispiel: Einfache Zusammenfassung
+                    verbatimTextOutput("summary_output")
+             )
+           ))
 )
 
 
@@ -166,6 +176,10 @@ server <- function(input, output) {
               editable = TRUE,  # Tabelle ist editierbar
               options = list(pageLength = 10))  # Optionen für die Tabelle
   }, sanitize.text.function = function(x) x)  # Erlaube HTML-Rendering
+  # Beispiel-Output für die zweite Seite
+  output$summary_output <- renderPrint({
+    summary(Data)
+  })
 }
 
 
