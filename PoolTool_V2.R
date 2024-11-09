@@ -73,6 +73,7 @@ Data <- load_data()
 
 # 3. Shiny UI ####################
 ui <- fluidPage(
+  
   ## 3.1 General Settings ##########
   # Define Theme
   theme = shinytheme("cerulean"),
@@ -307,8 +308,8 @@ server <- function(input, output, session) {
   
   
   
-  ### 3.4.2 Function to show current question ##########
-  observeEvent(c(current_index(), input$state_filter), {
+  ## 4.2 Function to Update Displayed Question ##########
+  observeEvent(c(current_index(), input$state_filter, input$next_question, input$prev_question), {
     # Set the current index as variable
     idx <- current_index()
     
@@ -341,37 +342,53 @@ server <- function(input, output, session) {
     update_border_colors(question)
   })
   
-  # Anpassung der Eingabefelder basierend auf dem ausgewählten Typ
+  
+  
+  
+  
+  ## 4.3 On Changing the Question-Type ##########  
+  # If input$type is changed
   observeEvent(input$type, {
+    # If question is A-Type
     if (input$type == "A") {
-      # Deaktiviere Korrektheitsfelder (a_cor bis d_cor)
+      # Disable solutions for a_cor to d_cor
       lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
         shinyjs::disable(id)
       })
       
-      # Aktiviert das Dropdown für die korrekte Antwort (a_type_cor)
+      # Enable solutions for a_type_cor
       shinyjs::enable("a_type_cor")
+      # Enable input field for option_e
       shinyjs::enable("option_e")
+      
+      # Update selected inputs for a_type_cor
       updateSelectInput(session, "a_type_cor", choices = c("A", "B", "C", "D", "E"), selected = NULL)
       
-      # Setze Korrektheitsfelder zurück
+      # Reset selected inputs for a_cor to d_cor
       lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
         updateSelectInput(session, id, selected = NULL)
       })
-    } else if (input$type == "K") {
-      # Deaktiviere das Dropdown für die korrekte Antwort (a_type_cor)
+    }
+    
+    # If question is K-Type
+    else if (input$type == "K") {
+      # Disable solutions for a_type_cor
       shinyjs::disable("a_type_cor")
+      # Disable option_e
       shinyjs::disable("option_e")
+      
+      # Update selected inputs for a_type_cor
       updateSelectInput(session, "a_type_cor", selected = NULL)
       
-      # Aktiviere Korrektheitsfelder (a_cor bis e_cor)
-      lapply(c("a_cor", "b_cor", "c_cor", "d_cor", "e_cor"), function(id) {
+      # Enable solutions for a_cor to d_cor
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
         shinyjs::enable(id)
+        # Update selected inputs for a_cor to d_cor
         updateSelectInput(session, id, choices = c("TRUE", "FALSE"), selected = NULL)
       })
     }
     
-    # Aktualisiere die Rahmenfarben, wenn der Typ geändert wird
+    # Call update_border_colors-function to update question colors
     update_border_colors(filtered_data()[current_index(),])
   })
   
@@ -379,7 +396,7 @@ server <- function(input, output, session) {
   
   
   
-  ### 3.4.3 Function to update question borders ##########
+  ## 4.3 Function to update question borders ##########
   update_border_colors <- function(question) {
     # If question is A-Type
     if (input$type == "A") {
@@ -422,7 +439,7 @@ server <- function(input, output, session) {
   
   
   
-  ### 3.4.4 Show Next Question ##########
+  ## 4.4 Show Next Question ##########
   # If next_question is pressed
   observeEvent(input$next_question, {
     # If the current index is smaller than the overall number of questions
@@ -439,7 +456,7 @@ server <- function(input, output, session) {
   
   
   
-  ### 3.4.5 Show Previous Question ##########
+  ## 4.5 Show Previous Question ##########
   # If prev_question is pressed
   observeEvent(input$prev_question, {
     # If the current question is not the first question
@@ -456,7 +473,7 @@ server <- function(input, output, session) {
   
   
   
-  ### 3.4.6 Save Data ##########  
+  ## 4.6 Save Data ##########  
   # If save_changes is pressed
   observeEvent(input$save_changes, {
     # Set the current index as variable
@@ -496,7 +513,7 @@ server <- function(input, output, session) {
   
   
   
-  ### 3.4.7 Updates on inputs ##########
+  ## 4.7 Updates on inputs ##########
   # On changes on a_type_cor
   observeEvent(input$a_type_cor,
                { update_border_colors(filtered_data()[current_index(),]) })
