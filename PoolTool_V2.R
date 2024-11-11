@@ -455,6 +455,9 @@ server <- function(input, output, session) {
       # Otherwise reset current index to 1
       current_index(1)
     }
+    
+    showNotification(as.vector(questions_data()[current_index(),1]), type = "message")
+    
   })
   
   
