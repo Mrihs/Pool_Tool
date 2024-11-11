@@ -1,5 +1,5 @@
 ID,Version,Type,Question,A,B,C,D,E,A_type_cor,A_cor,B_cor,C_cor,D_cor,Year,Week,Chapter,State,Tags,Remarks,source_file
-2024001,1,A,Welche Hauptstadt gehört zu Frankreich?,Paris,London,Zürich,Madrid,Bern,A,TRUE,TRUE,TRUE,TRUE,2024,1,1,Finalized,,,Example_Questions.xlsx
+2024001,1,A,Welche Hauptstadt gehört zu Frankreich?,Paris,London,Rom,Madrid,Bern,a,NA,NA,NA,NA,2024,1,1,Finalized,NA,NA,Example_Questions.xlsx
 2024002,1,A,Welche Farbe hat der Himmel bei klarem Wetter?,Blau,Grün,Rot,Gelb,Pink,a,NA,NA,NA,NA,2024,2,2,Creating,NA,NA,Example_Questions.xlsx
 2024003,1,A,Welches Tier ist ein Säugetier?,Krokodil,Hund,Falke,Karpfen,Huhn,b,NA,NA,NA,NA,2024,3,3,Review,NA,NA,Example_Questions.xlsx
 2024004,1,A,In welchem Kontinent liegt Ägypten?,Asien,Europa,Afrika,Australien,Arktis,c,NA,NA,NA,NA,2024,3,4,Finalized,NA,NA,Example_Questions.xlsx
