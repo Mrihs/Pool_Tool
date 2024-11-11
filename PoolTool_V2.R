@@ -29,7 +29,7 @@ tags$head(tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/aja
 ## 2.1 Function to Load Data ##########
 load_data <- function(folder_path = "Questions") {
   # Create a List of all excel- or csv-files
-  files <- list.files(folder_path, pattern = "\\.(xlsx|csv)$", full.names = TRUE)
+  files <- list.files(folder_path, pattern = "\\.(xlsx)$", full.names = TRUE)
   
   # Create a list for saving the data
   data_list <- list()
@@ -482,7 +482,7 @@ server <- function(input, output, session) {
     updated_data <- filtered_data()
     
     # Update data for question with current index by the current inputs
-    updated_data[idx, "Version"] <- input$question_version
+    updated_data[idx, "Version"] <- input$question_version %>% as.numeric()
     updated_data[idx, "Type"] <- input$type
     updated_data[idx, "Question"] <- input$question_text
     updated_data[idx, "A"] <- input$option_a
@@ -495,9 +495,9 @@ server <- function(input, output, session) {
     updated_data[idx, "B_cor"] <- input$b_cor
     updated_data[idx, "C_cor"] <- input$c_cor
     updated_data[idx, "D_cor"] <- input$d_cor
-    updated_data[idx, "Year"] <- input$year
-    updated_data[idx, "Week"] <- input$week
-    updated_data[idx, "Chapter"] <- input$chapter
+    updated_data[idx, "Year"] <- input$year %>% as.numeric()
+    updated_data[idx, "Week"] <- input$week %>% as.numeric()
+    updated_data[idx, "Chapter"] <- input$chapter %>% as.numeric()
     updated_data[idx, "State"] <- input$state
     updated_data[idx, "Tags"] <- input$tags
     updated_data[idx, "Remarks"] <- input$remarks
@@ -505,8 +505,22 @@ server <- function(input, output, session) {
     # Update question-data based on updated data
     questions_data(updated_data)
     
+    # Finde den Zeilenindex in Data, der der aktuellen Frage entspricht
+    row_in_Data <- which(Data$ID == questions_data()[idx, "ID"] & Data$Version == questions_data()[idx, "Version"])
+    
+    # Aktualisiere den Datensatz `Data` an der gefundenen Zeile
+    if (length(row_in_Data) == 1) {
+      Data[row_in_Data, ] <- questions_data()[idx, ]
+    }
+    
+    #Converst to dataframe
+    data_save <- as.data.frame(Data)
+    
+    # Write csv
+    write_csv(data_save, "Questions/Questions.csv")
+    
     # Print Notification
-    showNotification("Änderungen wurden gespeichert!", type = "message")
+    showNotification("Changes were saved", type = "message")
   })
   
   
