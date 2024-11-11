@@ -276,6 +276,11 @@ ui <- fluidPage(
 
 # 4. Shiny Server ####################
 server <- function(input, output, session) {
+  ## Disable UI
+  shinyjs::disable("question_id")
+  shinyjs::disable("question_version")
+  shinyjs::disable("type")
+  
   
   ## 4.1 Filter Questions ##########
   # Create an index of available Data
