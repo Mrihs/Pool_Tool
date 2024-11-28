@@ -1,5 +1,4 @@
 # TO DO
-# en/disable options based on question-type
 # -add new questions
 # -csv instead of xlsx
 # -delete question
@@ -36,7 +35,7 @@ tags$head(tags$link(rel = "stylesheet",
 
 
 # 2. Load Questions ####################
-## 2.1 Function to Load Data ##########
+## 2.1 Function to Load  <-  ##########
 load_data <- function(folder_path = "Questions") {
   # Create a List of all excel- or csv-files
   files <- list.files(folder_path, pattern = "\\.(xlsx)$", full.names = TRUE)
@@ -169,9 +168,9 @@ ui <- fluidPage(
       # Set style of row
       style = "background-color: #f0f0f0; padding: 15px; margin: 10px; border-radius: 5px;",
       # Add column with textinput for question-id
-      column(2, textInput("question_id", "ID", value = "", width = "100%")),
+      column(2, numericInput("question_id", "ID", value = "", width = "100%")),
       # Add column with textinput for question version
-      column(2, textInput("question_version", "Version", value = "", width = "100%")),
+      column(2, numericInput("question_version", "Version", value = "", width = "100%")),
       # Add dropdown for question-type
       column(4, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
       # Add column with textinput for question state
@@ -241,11 +240,11 @@ ui <- fluidPage(
       # Set style of row
       style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
       # Add column with textinput for year of question
-      column(4, textInput("year", "Jahr", value = "", width = "100%")),
+      column(4, numericInput("year", "Jahr", value = "", width = "100%")),
       # Add column with textinput for week of question
-      column(4, textInput("week", "Woche", value = "", width = "100%")),
+      column(4, numericInput("week", "Woche", value = "", width = "100%")),
       # Add column with textinput for chapter of question
-      column(4, textInput("chapter", "Kapitel", value = "", width = "100%"))
+      column(4, numericInput("chapter", "Kapitel", value = "", width = "100%"))
     ),
     
     # Create second row
@@ -421,12 +420,105 @@ server <- function(input, output, session) {
   
   
   
+  ## 4.7 On Clicking New Question ##########
+  observeEvent(input$new_question, {
+    # Hole die aktuellen Daten
+    current_data <- questions_data()
+    
+    # Stelle sicher, dass die ID-Spalte ein Character ist
+    current_data$ID <- as.character(current_data$ID)
+    
+    # Extrahiere das aktuelle Jahr
+    current_year <- as.numeric(format(Sys.Date(), "%Y"))
+    
+    # Finde bestehende IDs, die mit dem aktuellen Jahr beginnen
+    existing_ids <- current_data$ID[grepl(paste0("^", current_year), current_data$ID)]
+    
+    # Generiere die neue ID basierend auf dem höchsten bestehenden Wert
+    if (length(existing_ids) > 0) {
+      max_id <- max(as.numeric(sub(paste0("^", current_year), "", existing_ids)), na.rm = TRUE)
+      new_id <- paste0(current_year, sprintf("%04d", max_id + 1))
+    } else {
+      new_id <- paste0(current_year, "0001")
+    }
+    
+    # Erstelle einen neuen leeren Eintrag
+    new_question <- data.frame(
+      ID = as.character(new_id), # ID als Character setzen
+      Version = 1,
+      Type = "A",
+      Question = "",
+      A = "",
+      B = "",
+      C = "",
+      D = "",
+      E = "",
+      A_type_cor = NA,
+      A_cor = NA,
+      B_cor = NA,
+      C_cor = NA,
+      D_cor = NA,
+      Year = current_year,
+      Week = NA,
+      Chapter = NA,
+      State = "Draft",
+      Tags = "",
+      Remarks = "",
+      stringsAsFactors = FALSE
+    )
+    
+    # Füge die neue Frage zu den Daten hinzu
+    updated_data <- bind_rows(current_data, new_question)
+    questions_data(updated_data)
+    
+    # Setze den aktuellen Index auf die neue Frage
+    current_index(nrow(updated_data))
+    
+    # Zeige eine Benachrichtigung
+    showNotification("Neue Frage hinzugefügt", type = "message")
+  })
+  
+  
+  
+  
 
   
   
   
   
-  ## 4.7 Save Data ##########  
+  
+  ## 4.7 Updates on inputs ##########
+  # On changes on a_type_cor
+  observeEvent(input$a_type_cor,
+               { update_border_colors(questions_data()[current_index(),]) })
+  # On changes on a_cor
+  observeEvent(input$a_cor, 
+               { update_border_colors(questions_data()[current_index(),]) })
+  # On changes on b_cor
+  observeEvent(input$b_cor, 
+               { update_border_colors(questions_data()[current_index(),]) })
+  # On changes on c_cor
+  observeEvent(input$c_cor, 
+               { update_border_colors(questions_data()[current_index(),]) })
+  # On changes on d_cor
+  observeEvent(input$d_cor, 
+               { update_border_colors(questions_data()[current_index(),]) })
+  
+  
+  
+  
+  ## 4.18 Deactivate UI based on Question Type on start ##########
+  # Add a Delay
+  shinyjs::delay(150, {
+    # Call toggle_UI function to deactivate inputs which do not match the question-type
+    toggle_UI(session, question)
+  })  
+  
+  
+  
+  
+  
+  ## 4.19 Save Data ##########  
   # If save_changes is pressed
   observeEvent(input$save_changes, {
     # Set the current index as variable
@@ -474,46 +566,14 @@ server <- function(input, output, session) {
     
     # Print Notification
     showNotification("Data Saved", type = "message")
-  })
+  })  
   
   
   
   
   
-  ## 4.8 Updates on inputs ##########
-  # On changes on a_type_cor
-  observeEvent(input$a_type_cor,
-               { update_border_colors(questions_data()[current_index(),]) })
-  # On changes on a_cor
-  observeEvent(input$a_cor, 
-               { update_border_colors(questions_data()[current_index(),]) })
-  # On changes on b_cor
-  observeEvent(input$b_cor, 
-               { update_border_colors(questions_data()[current_index(),]) })
-  # On changes on c_cor
-  observeEvent(input$c_cor, 
-               { update_border_colors(questions_data()[current_index(),]) })
-  # On changes on d_cor
-  observeEvent(input$d_cor, 
-               { update_border_colors(questions_data()[current_index(),]) })
-  
-  
-  
-  
-  
-  ## 4.9 Deactivate UI based on Question Type on start ##########
-  # Add a Delay
-  shinyjs::delay(150, {
-    # Call toggle_UI function to deactivate inputs which do not match the question-type
-    toggle_UI(session, question)
-  })    
-  
-  
-  
-  
-  
-  ## 4.10 Function to De/Activate Question-Inputs ##########
-  #### 4.10.1 Save Question Changes ##########
+  ## 4.20 Function to De/Activate Question-Inputs ##########
+  #### 4.20.1 Save Question Changes ##########
   save_current_question <- function() {
     # Extract the current index
     idx <- current_index()
@@ -550,7 +610,7 @@ server <- function(input, output, session) {
   
   
 
-  #### 4.10.2 Function to update question borders ##########
+  #### 4.20.2 Function to update question borders ##########
   update_border_colors <- function(question) {
     # If question is A-Type
     if (input$type == "A") {
@@ -593,7 +653,7 @@ server <- function(input, output, session) {
   
   
   
-  #### 4.10.3 En/Disable UI based on State ##########
+  #### 4.20.3 En/Disable UI based on State ##########
   toggle_finalized <- function(is_finalized) {
     # Create a list of all input_ids
     input_ids <- c("type", "question_text", "option_a", "option_b", "option_c", "option_d",
@@ -614,7 +674,7 @@ server <- function(input, output, session) {
   
   
   
-  #### 4.10.4 Update Options ##########
+  #### 4.20.4 Update Options ##########
   update_answer_options <- function(session, question) {
     # Update the answer options based on the question dataset
     updateSelectInput(session, "a_cor", selected = question$A_cor)
@@ -629,7 +689,7 @@ server <- function(input, output, session) {
   
   
   
-  #### 4.10.4 En/Disable UI based on State ##########
+  #### 4.20.4 En/Disable UI based on State ##########
   toggle_UI <- function(session, question) {
     # If question is A-Type
     if (input$type == "A") {
