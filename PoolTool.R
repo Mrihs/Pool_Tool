@@ -138,11 +138,22 @@ ui <- fluidPage(
 
     
     # Add a column for the next-button
-    column(1, actionButton("new_question",
+    column(2,
+           column(4, actionButton("new_question",
                            # Load button-icon
-                           label =  HTML('<i class="fa-solid fa-plus"></i>'),
+                           label =  HTML('<i class="fa-solid fa-square-plus"></i>'),
                            # Set style of button
-                           style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
+                           style = "font-size: 12px; width: 100%; color: green")),
+           column(4, actionButton("new_version",
+                        # Load button-icon
+                        label = HTML('<i class="fa-solid fa-code-branch"></i>'),
+                        # Set style of button
+                        style = "font-size: 12px; width: 100%; color: blue")),
+           column(4, actionButton("delete_question",
+                                  # Load button-icon
+                                  label = HTML('<i class="fa-solid fa-trash"></i>'),
+                                  # Set style of button
+                                  style = "font-size: 12px; width: 100%; color: red"))),
     
         
     # Add space by means of an empty column
