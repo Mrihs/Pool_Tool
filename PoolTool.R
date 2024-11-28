@@ -279,7 +279,7 @@ server <- function(input, output, session) {
   
   
   ## 4.2 Function to Update Displayed Question ##########
-  observeEvent(c(current_index(), input$state_filter, input$next_question, input$prev_question), {
+  observeEvent(c(current_index(), input$next_question, input$prev_question), {
     # Set the current index as variable
     idx <- current_index()
     
@@ -310,8 +310,15 @@ server <- function(input, output, session) {
     
     # Call update_border_colors-function to update question colors
     update_border_colors(question)
+    
+    # Call toggle_finalized-function to de/activate inputs
+    toggle_finalized(question$State == "Finalized")
   })
-  
+
+    
+  observeEvent(input$state, {
+    toggle_finalized(input$state == "Finalized")
+  })
   
   
   
@@ -366,50 +373,14 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.4 Function to update question borders ##########
-  update_border_colors <- function(question) {
-    # If question is A-Type
-    if (input$type == "A") {
-      # Save correct answer based on a_type_cor input
-      correct_answer <- input$a_type_cor
-      # Save available options
-      options <- c("A", "B", "C", "D", "E")
-      
-      # Set border of answer options
-      lapply(options, function(option) {
-        # Save color for every option based on correct answer
-        color <- ifelse(correct_answer == option, "green", "red")
-        # Apply color for border of answer options
-        shinyjs::runjs(sprintf('$("#option_%s").css("border-color", "%s")', tolower(option), color))
-      })
-    }
-    
-    # If question is K-Type
-    if (input$type == "K") {
-      # For every index in number of options (4)
-      for (i in 1:4) {
-        # Define the current option (a to d) based on the current index
-        option <- c("a", "b", "c", "d")[i]
-        
-        # Define for each option the correct answer based on the respective solution
-        correct_value <- switch(option,
-                                "a" = input$a_cor,
-                                "b" = input$b_cor,
-                                "c" = input$c_cor,
-                                "d" = input$d_cor)
-        # Save color for every option based on correct answer
-        color <- ifelse(correct_value == "TRUE", "green", "red")
-        # Apply color for border of answer options
-        shinyjs::runjs(sprintf('$("#option_%s").css("border-color", "%s")', option, color))
-      }
-    }
-  }
+
   
   
   
   
   
-  ## 4.5 Show Next Question ##########
+  ## 4.5 Jump between Questions  ##########
+  #### 4.5.1 Show Next Question ##########
   # If next_question is pressed
   observeEvent(input$next_question, {
     save_current_question()
@@ -421,16 +392,13 @@ server <- function(input, output, session) {
       # Otherwise reset current index to 1
       current_index(1)
     }
-    
-    showNotification(as.vector(questions_data()[current_index(),1]), type = "message")
-    
   })
   
   
   
   
   
-  ## 4.6 Show Previous Question ##########
+  #### 4.5.2 Show Previous Question ##########
   # If prev_question is pressed
   observeEvent(input$prev_question, {
     save_current_question()
@@ -450,42 +418,12 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.7 Save Question Changes ##########  
-  save_current_question <- function() {
-    # Extract the current index
-    idx <- current_index()
-    # Make copy of questions_data
-    updated_data <- questions_data()
-    
-    # Update Question-variables based on inputs
-    updated_data[idx, "Version"] <- as.numeric(input$question_version)
-    updated_data[idx, "Type"] <- input$type
-    updated_data[idx, "Question"] <- input$question_text
-    updated_data[idx, "A"] <- input$option_a
-    updated_data[idx, "B"] <- input$option_b
-    updated_data[idx, "C"] <- input$option_c
-    updated_data[idx, "D"] <- input$option_d
-    updated_data[idx, "E"] <- input$option_e
-    updated_data[idx, "A_type_cor"] <- input$a_type_cor
-    updated_data[idx, "A_cor"] <- input$a_cor
-    updated_data[idx, "B_cor"] <- input$b_cor
-    updated_data[idx, "C_cor"] <- input$c_cor
-    updated_data[idx, "D_cor"] <- input$d_cor
-    updated_data[idx, "Year"] <- as.numeric(input$year)
-    updated_data[idx, "Week"] <- as.numeric(input$week)
-    updated_data[idx, "Chapter"] <- as.numeric(input$chapter)
-    updated_data[idx, "State"] <- input$state
-    updated_data[idx, "Tags"] <- input$tags
-    updated_data[idx, "Remarks"] <- input$remarks
-    
-    # Update questions_data with the updated data
-    questions_data(updated_data)
-  }
+
   
   
   
   
-  ## 4.8 Save Data ##########  
+  ## 4.6 Save Data ##########  
   # If save_changes is pressed
   observeEvent(input$save_changes, {
     # Set the current index as variable
@@ -532,14 +470,14 @@ server <- function(input, output, session) {
     write_csv(data_save, "Questions/Questions.csv")
     
     # Print Notification
-    showNotification("Changes were saved", type = "message")
+    showNotification("Data Saved", type = "message")
   })
   
   
   
   
   
-  ## 4.9 Updates on inputs ##########
+  ## 4.7 Updates on inputs ##########
   # On changes on a_type_cor
   observeEvent(input$a_type_cor,
                { update_border_colors(questions_data()[current_index(),]) })
@@ -555,6 +493,108 @@ server <- function(input, output, session) {
   # On changes on d_cor
   observeEvent(input$d_cor, 
                { update_border_colors(questions_data()[current_index(),]) })
+  
+  
+  
+  
+  
+  ## 4.10 Function to De/Activate Question-Inputs ##########
+  #### 4.10.1 Save Question Changes ##########
+  save_current_question <- function() {
+    # Extract the current index
+    idx <- current_index()
+    # Make copy of questions_data
+    updated_data <- questions_data()
+    
+    # Update Question-variables based on inputs
+    updated_data[idx, "Version"] <- as.numeric(input$question_version)
+    updated_data[idx, "Type"] <- input$type
+    updated_data[idx, "Question"] <- input$question_text
+    updated_data[idx, "A"] <- input$option_a
+    updated_data[idx, "B"] <- input$option_b
+    updated_data[idx, "C"] <- input$option_c
+    updated_data[idx, "D"] <- input$option_d
+    updated_data[idx, "E"] <- input$option_e
+    updated_data[idx, "A_type_cor"] <- input$a_type_cor
+    updated_data[idx, "A_cor"] <- input$a_cor
+    updated_data[idx, "B_cor"] <- input$b_cor
+    updated_data[idx, "C_cor"] <- input$c_cor
+    updated_data[idx, "D_cor"] <- input$d_cor
+    updated_data[idx, "Year"] <- as.numeric(input$year)
+    updated_data[idx, "Week"] <- as.numeric(input$week)
+    updated_data[idx, "Chapter"] <- as.numeric(input$chapter)
+    updated_data[idx, "State"] <- input$state
+    updated_data[idx, "Tags"] <- input$tags
+    updated_data[idx, "Remarks"] <- input$remarks
+    
+    # Update questions_data with the updated data
+    questions_data(updated_data)
+  }
+  
+  
+  
+  
+  
+
+  #### 4.10.2 Function to update question borders ##########
+  update_border_colors <- function(question) {
+    # If question is A-Type
+    if (input$type == "A") {
+      # Save correct answer based on a_type_cor input
+      correct_answer <- input$a_type_cor
+      # Save available options
+      options <- c("A", "B", "C", "D", "E")
+      
+      # Set border of answer options
+      lapply(options, function(option) {
+        # Save color for every option based on correct answer
+        color <- ifelse(correct_answer == option, "green", "red")
+        # Apply color for border of answer options
+        shinyjs::runjs(sprintf('$("#option_%s").css("border-color", "%s")', tolower(option), color))
+      })
+    }
+    
+    # If question is K-Type
+    if (input$type == "K") {
+      # For every index in number of options (4)
+      for (i in 1:4) {
+        # Define the current option (a to d) based on the current index
+        option <- c("a", "b", "c", "d")[i]
+        
+        # Define for each option the correct answer based on the respective solution
+        correct_value <- switch(option,
+                                "a" = input$a_cor,
+                                "b" = input$b_cor,
+                                "c" = input$c_cor,
+                                "d" = input$d_cor)
+        # Save color for every option based on correct answer
+        color <- ifelse(correct_value == "TRUE", "green", "red")
+        # Apply color for border of answer options
+        shinyjs::runjs(sprintf('$("#option_%s").css("border-color", "%s")', option, color))
+      }
+    }
+  }
+
+  
+  
+  
+  
+  #### 4.10.3 En/Disable UI based on State ##########
+  toggle_finalized <- function(is_finalized) {
+    # Create a list of all input_ids
+    input_ids <- c("question_text", "option_a", "option_b", "option_c", "option_d",
+                   "option_e", "a_type_cor", "a_cor", "b_cor", "c_cor", "d_cor",
+                   "year", "week", "chapter", "tags", "remarks")
+    
+    # if state is finalized
+    if (is_finalized) {
+      # Deactivate questions
+      lapply(input_ids, shinyjs::disable)
+    } else {
+      # Activate questions if state is not finalized
+      lapply(input_ids, shinyjs::enable)
+    }
+  }
 }
 
 
