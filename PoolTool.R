@@ -295,7 +295,7 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.2 Function to Update Displayed Question ##########
+  ## 4.3 Function to Update Displayed Question ##########
   observeEvent(c(current_index(), input$next_question, input$prev_question), {
     # Set the current index as variable
     idx <- current_index()
@@ -333,62 +333,41 @@ server <- function(input, output, session) {
     
     update_answer_options(session, question)
     
+    # Add a Delay
+    shinyjs::delay(10, {
+      # Call toggle_UI function to deactivate inputs which do not match the question-type
+      toggle_UI(session, question)
+    })    
   })
-
-    
+  
+  
+  
+  
+  
+  ## 4.4 On changes on the State-Input ##########
   observeEvent(input$state, {
+    # call toggle_finalized-function using the term "Finalized"
     toggle_finalized(input$state == "Finalized")
   })
   
   
   
   
-  ## 4.3 On Changing the Question-Type ##########  
+  ## 4.5 On Changing the Question-Type ##########  
   # If input$type is changed
   observeEvent(input$type, {
-    # If question is A-Type
-    if (input$type == "A") {
-      # Disable solutions for a_cor to d_cor
-      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
-        shinyjs::disable(id)
-      })
-      
-      # Enable solutions for a_type_cor
-      shinyjs::enable("a_type_cor")
-      # Enable input field for option_e
-      shinyjs::enable("option_e")
-      
-      # Update selected inputs for a_type_cor
-      updateSelectInput(session, "a_type_cor", choices = c("A", "B", "C", "D", "E"), selected = NULL)
-      
-      # Reset selected inputs for a_cor to d_cor
-      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
-        updateSelectInput(session, id, selected = NULL)
-      })
-    }
-    
-    # If question is K-Type
-    else if (input$type == "K") {
-      # Disable solutions for a_type_cor
-      shinyjs::disable("a_type_cor")
-      # Disable option_e
-      shinyjs::disable("option_e")
-      
-      # Update selected inputs for a_type_cor
-      updateSelectInput(session, "a_type_cor", selected = NULL)
-      
-      # Enable solutions for a_cor to d_cor
-      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
-        shinyjs::enable(id)
-        # Update selected inputs for a_cor to d_cor
-        updateSelectInput(session, id, choices = c("TRUE", "FALSE"), selected = NULL)
-      })
-    }
-    
+
     # Call update_border_colors-function to update question colors
     update_border_colors(questions_data()[current_index(),])
     
+    # Call update_answer_options-function to update the answer-options
     update_answer_options(session, questions_data()[current_index(),])
+
+    # Add a Delay
+    shinyjs::delay(10, {
+      # Call toggle_UI function to deactivate inputs which do not match the question-type
+      toggle_UI(session, question)
+    })
   })
   
   
@@ -401,11 +380,13 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.5 Jump between Questions  ##########
-  #### 4.5.1 Show Next Question ##########
+  ## 4.6 Jump between Questions  ##########
+  #### 4.6.1 Show Next Question ##########
   # If next_question is pressed
   observeEvent(input$next_question, {
+    # Call save_current_question-function to save the current question
     save_current_question()
+    
     # If the current index is smaller than the overall number of questions
     if (current_index() < total_questions()) {
       # Increase the current index by 1
@@ -420,11 +401,11 @@ server <- function(input, output, session) {
   
   
   
-  #### 4.5.2 Show Previous Question ##########
+  #### 4.6.2 Show Previous Question ##########
   # If prev_question is pressed
   observeEvent(input$prev_question, {
+    # Call save_current_question-function to save the current question
     save_current_question()
-    
     
     # If the current question is not the first question
     if (current_index() > 1) {
@@ -445,7 +426,7 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.6 Save Data ##########  
+  ## 4.7 Save Data ##########  
   # If save_changes is pressed
   observeEvent(input$save_changes, {
     # Set the current index as variable
@@ -477,15 +458,15 @@ server <- function(input, output, session) {
     # Update question-data based on updated data
     questions_data(updated_data)
     
-    # Finde den Zeilenindex in Data, der der aktuellen Frage entspricht
+    # Find row-index for current question
     row_in_Data <- which(Data$ID == questions_data()[idx, "ID"] & Data$Version == questions_data()[idx, "Version"])
     
-    # Aktualisiere den Datensatz `Data` an der gefundenen Zeile
+    # Update data at current index
     if (length(row_in_Data) == 1) {
       Data[row_in_Data, ] <- questions_data()[idx, ]
     }
     
-    #Converst to dataframe
+    #Convert to dataframe
     data_save <- as.data.frame(Data)
     
     # Write csv
@@ -499,7 +480,7 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.7 Updates on inputs ##########
+  ## 4.8 Updates on inputs ##########
   # On changes on a_type_cor
   observeEvent(input$a_type_cor,
                { update_border_colors(questions_data()[current_index(),]) })
@@ -515,6 +496,17 @@ server <- function(input, output, session) {
   # On changes on d_cor
   observeEvent(input$d_cor, 
                { update_border_colors(questions_data()[current_index(),]) })
+  
+  
+  
+  
+  
+  ## 4.9 Deactivate UI based on Question Type on start ##########
+  # Add a Delay
+  shinyjs::delay(150, {
+    # Call toggle_UI function to deactivate inputs which do not match the question-type
+    toggle_UI(session, question)
+  })    
   
   
   
@@ -624,22 +616,51 @@ server <- function(input, output, session) {
   
   #### 4.10.4 Update Options ##########
   update_answer_options <- function(session, question) {
-    # Aktualisiert die Antwortoptionen basierend auf dem übergebenen Datensatz `question`
+    # Update the answer options based on the question dataset
     updateSelectInput(session, "a_cor", selected = question$A_cor)
     updateSelectInput(session, "b_cor", selected = question$B_cor)
     updateSelectInput(session, "c_cor", selected = question$C_cor)
     updateSelectInput(session, "d_cor", selected = question$D_cor)
     updateSelectInput(session, "a_type_cor", selected = question$A_type_cor)
   }
+
+
+  
+  
+  
+  
+  #### 4.10.4 En/Disable UI based on State ##########
+  toggle_UI <- function(session, question) {
+    # If question is A-Type
+    if (input$type == "A") {
+      # Disable solutions for a_cor to d_cor and clear their values
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
+        updateSelectInput(session, id, selected = NA)
+        shinyjs::disable(id)
+      })
+      
+      # Enable solutions for a_type_cor and option_e
+      shinyjs::enable("a_type_cor")
+      shinyjs::enable("option_e")
+      
+    } 
+    # If question is K-Type
+    else if (input$type == "K") {
+      # Disable solutions for a_type_cor and option_e and clear their values
+      updateSelectInput(session, "a_type_cor", selected = NA)
+      shinyjs::disable("a_type_cor")
+      
+      # Disable solutions for option E and option_e and clear their values
+      updateTextInput(session, "option_e", value = "")
+      shinyjs::disable("option_e")
+      
+      # Enable solutions for a_cor to d_cor
+      lapply(c("a_cor", "b_cor", "c_cor", "d_cor"), function(id) {
+        shinyjs::enable(id)
+      })
+    }
+  }
 }
-
-  
-  
-  
-  
-  #### 4.10.3 En/Disable UI based on State ##########
-
-
 
 
 
