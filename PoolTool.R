@@ -422,29 +422,35 @@ server <- function(input, output, session) {
   
   ## 4.7 On Clicking New Question ##########
   observeEvent(input$new_question, {
-    # Hole die aktuellen Daten
+    # Get current data
     current_data <- questions_data()
     
-    # Stelle sicher, dass die ID-Spalte ein Character ist
+    # Make ID numeric
     current_data$ID <- as.character(current_data$ID)
     
-    # Extrahiere das aktuelle Jahr
+    # Extract current year
     current_year <- as.numeric(format(Sys.Date(), "%Y"))
     
-    # Finde bestehende IDs, die mit dem aktuellen Jahr beginnen
+    # Get a list of existinc IDs with the current year
     existing_ids <- current_data$ID[grepl(paste0("^", current_year), current_data$ID)]
     
-    # Generiere die neue ID basierend auf dem höchsten bestehenden Wert
+    # Generate new ID based on existing IDs
     if (length(existing_ids) > 0) {
+      # Get the highest value for the existing ID
       max_id <- max(as.numeric(sub(paste0("^", current_year), "", existing_ids)), na.rm = TRUE)
+      
+      # Calculate the value of the new ID
       new_id <- paste0(current_year, sprintf("%04d", max_id + 1))
-    } else {
+    }
+    # If there are no existing IDs with the current year
+    else {
+      # Make the appending value 0001
       new_id <- paste0(current_year, "0001")
     }
     
-    # Erstelle einen neuen leeren Eintrag
+    # Create an empty entry for a new question
     new_question <- data.frame(
-      ID = as.character(new_id), # ID als Character setzen
+      ID = as.character(new_id),
       Version = 1,
       Type = "A",
       Question = "",
@@ -467,15 +473,14 @@ server <- function(input, output, session) {
       stringsAsFactors = FALSE
     )
     
-    # Füge die neue Frage zu den Daten hinzu
+    # Append the new question
     updated_data <- bind_rows(current_data, new_question)
+    
+    # update updated_data to the questions_data
     questions_data(updated_data)
     
-    # Setze den aktuellen Index auf die neue Frage
+    # Set the current index to the index of the new entry
     current_index(nrow(updated_data))
-    
-    # Zeige eine Benachrichtigung
-    showNotification("Neue Frage hinzugefügt", type = "message")
   })
   
   
