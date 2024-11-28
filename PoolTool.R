@@ -113,9 +113,18 @@ ui <- fluidPage(
                            label = HTML('<i class="fas fa-arrow-right"></i>'),
                            # Set style of button
                            style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
+
     
+    # Add a column for the next-button
+    column(1, actionButton("new_question",
+                           # Load button-icon
+                           label =  HTML('<i class="fa-solid fa-plus"></i>'),
+                           # Set style of button
+                           style = "font-size: 12px; padding: 10px 20px; width: 100%;")),
+    
+        
     # Add space by means of an empty column
-    column(4),
+    column(3),
     
     # Add a column for the load-button
     column(2, downloadButton("download_data", "Load",
@@ -256,8 +265,7 @@ server <- function(input, output, session) {
   ## 4.1 Disable UI ##########
   shinyjs::disable("question_id")
   shinyjs::disable("question_version")
-  shinyjs::disable("type")
-  
+
   
   ## 4.2 Load Data ##########
   # Create an index of available Data
@@ -582,7 +590,7 @@ server <- function(input, output, session) {
   #### 4.10.3 En/Disable UI based on State ##########
   toggle_finalized <- function(is_finalized) {
     # Create a list of all input_ids
-    input_ids <- c("question_text", "option_a", "option_b", "option_c", "option_d",
+    input_ids <- c("type", "question_text", "option_a", "option_b", "option_c", "option_d",
                    "option_e", "a_type_cor", "a_cor", "b_cor", "c_cor", "d_cor",
                    "year", "week", "chapter", "tags", "remarks")
     
