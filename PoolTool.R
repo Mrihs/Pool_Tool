@@ -1,6 +1,5 @@
 # TO DO
 # -csv instead of xlsx
-# -delete question
 # -Create new versions
 # -filter function
 # -Overview
@@ -511,13 +510,77 @@ server <- function(input, output, session) {
   
   
   
+  
+  ## 4.8 On Clicking Delete Question ##########
+  observeEvent(input$delete_question, {
+
+    # Check that there are enough questions
+    if (total_questions() > 1) {
+      # Save the questions data as current_data
+      current_data <- questions_data()
+      
+      # if the current index is smaller than the current number of questions
+      if(current_index() < total_questions()) {
+        # Increase by one to get the next index
+        next_index <- current_index() + 1
+        # Create a backup of the current index
+        backup_current_index <- current_index()
+      }
+      else {
+        # Otherwise reset both the nex_index and the backup_current_index to 1
+        next_index <- 1
+        backup_current_index <- 1
+      }
+
+      
+      # Remove the question that was previously current
+      updated_data <- current_data[-current_index(), ] # Delete the current question
+      
+      # Update the reactive questions_data
+      questions_data(updated_data)
+      
+      # Recalculate total_questions after the update
+      total_questions <- reactive({ nrow(questions_data()) })
+
+      #Extract the number of rows
+      total_q <- nrow(updated_data)
+      
+      # Adjust next_index if necessary
+      next_index <- min(next_index, total_q)
+      
+      # Adjust backup_current_index if necessary
+      backup_current_index <- min(backup_current_index, total_q)
+      
+      # Adjust the current index after deletion if necessary
+      # If the current question is larger than the number of questions...
+      if (current_index() > total_questions()) {
+        # Reset the current index to 1 to prevent index overflow
+        current_index(max(1, total_questions()))
+      } else {
+        # If it is smaller, then set the current_index to the next_index
+        current_index(next_index)
+      }
+      
+      #Add a delay
+      shinyjs::delay(10, {
+        # Reset the current-index to its original value
+        current_index(backup_current_index)
+      })    
+    } else {
+      # Show an error-message if only one question remains
+      showNotification("Can't delete if only one question remains", type = "error")
+    }
+  })
+  
+  
+  
 
   
   
   
   
   
-  ## 4.7 Updates on inputs ##########
+  ## 4.10 Updates on inputs ##########
   # On changes on a_type_cor
   observeEvent(input$a_type_cor,
                { update_border_colors(questions_data()[current_index(),]) })
@@ -686,7 +749,7 @@ server <- function(input, output, session) {
   #### 4.20.3 En/Disable UI based on State ##########
   toggle_finalized <- function(is_finalized) {
     # Create a list of all input_ids
-    input_ids <- c("type", "question_text", "option_a", "option_b", "option_c", "option_d",
+    input_ids <- c("delete_question", "type", "question_text", "option_a", "option_b", "option_c", "option_d",
                    "option_e", "a_type_cor", "a_cor", "b_cor", "c_cor", "d_cor",
                    "year", "week", "chapter", "tags", "remarks")
     
