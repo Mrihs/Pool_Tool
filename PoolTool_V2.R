@@ -14,7 +14,8 @@ library(writexl)
 
 
 ## 1.2 Load Stylesheet ####################
-tags$head(tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"))
+tags$head(tags$link(rel = "stylesheet", 
+                    href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"))
 
 
 
@@ -133,32 +134,8 @@ ui <- fluidPage(
   
   
   
-  ## 3.3 Set filter UI ##########
-  # Create a new row
-  fluidRow(
-    # Create a column (full range-width)
-    column(12,
-           # Create a collapsable area
-           bsCollapse(id = "state_selector", open = "state", 
-                      # Set panel for collapsable area
-                      bsCollapsePanel(title = "Filter Questions",
-                                      style = "padding: 10px;",
-                                      
-                                      # Set filter for Question State
-                                      selectInput(inputId = "state_filter",
-                                                  label = "Question State",
-                                                  choices = unique(Data$State),
-                                                  selected = NULL)
-                                      )
-                      )
-           )
-    ),
   
-  
-  
-  
-  
-  ## 3.4 Editor UI ##########
+  ## 3.3 Editor UI ##########
   # Create a new row
   fluidRow(
     # Set style of row
@@ -168,7 +145,7 @@ ui <- fluidPage(
     
     
     
-    ### 3.4.1 Question ID UI ##########    
+    ### 3.3.1 Question ID UI ##########    
     # Create row
     fluidRow(
       # Set style of row
@@ -187,8 +164,8 @@ ui <- fluidPage(
     
     
     
-    ### 3.4.2 Set Question Editor UI ##########
-    #### 3.4.2.1 Set Question UI ##########
+    ### 3.3.2 Set Question Editor UI ##########
+    #### 3.3.2.1 Set Question UI ##########
     # Create row
     fluidRow(
       # Set style of row
@@ -204,7 +181,7 @@ ui <- fluidPage(
       style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
 
             
-      #### 3.4.2.2 Set Options UI ##########
+      #### 3.3.2.2 Set Options UI ##########
       # Create column for answer options
       column(9,
              # Add textinput for option a
@@ -220,7 +197,7 @@ ui <- fluidPage(
       ),
 
 
-      #### 3.4.2.3 Set Solutions UI ##########
+      #### 3.3.2.3 Set Solutions UI ##########
       # Create column for solutions
       column(3,
              # Add dropdown for solution on option a
@@ -240,7 +217,7 @@ ui <- fluidPage(
     
     
     
-    ### 3.4.3 Set Meta Data UI ##########
+    ### 3.3.3 Set Meta Data UI ##########
     # Create row
     fluidRow(
       # Set style of row
@@ -276,33 +253,21 @@ ui <- fluidPage(
 
 # 4. Shiny Server ####################
 server <- function(input, output, session) {
-  ## Disable UI
+  ## 4.1 Disable UI ##########
   shinyjs::disable("question_id")
   shinyjs::disable("question_version")
   shinyjs::disable("type")
   
   
-  ## 4.1 Filter Questions ##########
+  ## 4.2 Load Data ##########
   # Create an index of available Data
   questions_data <- reactiveVal(Data)
   # Save the index of the current question
   current_index <- reactiveVal(1)
-  
-  # Filter data based on selected filter for state
-  filtered_data <- reactive({
-    
-    # If filter is not available or set to ""
-    if (is.null(input$state_filter) || input$state_filter == "") {
-      # Return the questions data
-      return(questions_data())
-    }
-    
-    # Filter data if a filter is applied
-    questions_data() %>% filter(State == input$state_filter)
-  })
+
   
   # Count number of available questions
-  total_questions <- reactive({ nrow(filtered_data()) })
+  total_questions <- reactive({ nrow(questions_data()) })
   
   # Update UI text with current question and number of available questions
   output$question_counter <- renderText({
@@ -319,7 +284,7 @@ server <- function(input, output, session) {
     idx <- current_index()
     
     # Load question with current index
-    question <- filtered_data()[idx, ]
+    question <- questions_data()[idx, ]
     
     # Update input fields for question with current index
     updateTextInput(session, "question_id", value = question$ID)
@@ -394,14 +359,14 @@ server <- function(input, output, session) {
     }
     
     # Call update_border_colors-function to update question colors
-    update_border_colors(filtered_data()[current_index(),])
+    update_border_colors(questions_data()[current_index(),])
   })
   
   
   
   
   
-  ## 4.3 Function to update question borders ##########
+  ## 4.4 Function to update question borders ##########
   update_border_colors <- function(question) {
     # If question is A-Type
     if (input$type == "A") {
@@ -444,9 +409,10 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.4 Show Next Question ##########
+  ## 4.5 Show Next Question ##########
   # If next_question is pressed
   observeEvent(input$next_question, {
+    save_current_question()
     # If the current index is smaller than the overall number of questions
     if (current_index() < total_questions()) {
       # Increase the current index by 1
@@ -464,9 +430,12 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.5 Show Previous Question ##########
+  ## 4.6 Show Previous Question ##########
   # If prev_question is pressed
   observeEvent(input$prev_question, {
+    save_current_question()
+    
+    
     # If the current question is not the first question
     if (current_index() > 1) {
       # Decrease the current index by 1
@@ -481,13 +450,48 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.6 Save Data ##########  
+  ## 4.7 Save Question Changes ##########  
+  save_current_question <- function() {
+    # Extract the current index
+    idx <- current_index()
+    # Make copy of questions_data
+    updated_data <- questions_data()
+    
+    # Update Question-variables based on inputs
+    updated_data[idx, "Version"] <- as.numeric(input$question_version)
+    updated_data[idx, "Type"] <- input$type
+    updated_data[idx, "Question"] <- input$question_text
+    updated_data[idx, "A"] <- input$option_a
+    updated_data[idx, "B"] <- input$option_b
+    updated_data[idx, "C"] <- input$option_c
+    updated_data[idx, "D"] <- input$option_d
+    updated_data[idx, "E"] <- input$option_e
+    updated_data[idx, "A_type_cor"] <- input$a_type_cor
+    updated_data[idx, "A_cor"] <- input$a_cor
+    updated_data[idx, "B_cor"] <- input$b_cor
+    updated_data[idx, "C_cor"] <- input$c_cor
+    updated_data[idx, "D_cor"] <- input$d_cor
+    updated_data[idx, "Year"] <- as.numeric(input$year)
+    updated_data[idx, "Week"] <- as.numeric(input$week)
+    updated_data[idx, "Chapter"] <- as.numeric(input$chapter)
+    updated_data[idx, "State"] <- input$state
+    updated_data[idx, "Tags"] <- input$tags
+    updated_data[idx, "Remarks"] <- input$remarks
+    
+    # Update questions_data with the updated data
+    questions_data(updated_data)
+  }
+  
+  
+  
+  
+  ## 4.8 Save Data ##########  
   # If save_changes is pressed
   observeEvent(input$save_changes, {
     # Set the current index as variable
     idx <- current_index()
     # Save the filtered data as the updated data
-    updated_data <- filtered_data()
+    updated_data <- questions_data()
     
     # Update data for question with current index by the current inputs
     updated_data[idx, "Version"] <- input$question_version %>% as.numeric()
@@ -535,22 +539,22 @@ server <- function(input, output, session) {
   
   
   
-  ## 4.7 Updates on inputs ##########
+  ## 4.9 Updates on inputs ##########
   # On changes on a_type_cor
   observeEvent(input$a_type_cor,
-               { update_border_colors(filtered_data()[current_index(),]) })
+               { update_border_colors(questions_data()[current_index(),]) })
   # On changes on a_cor
   observeEvent(input$a_cor, 
-               { update_border_colors(filtered_data()[current_index(),]) })
+               { update_border_colors(questions_data()[current_index(),]) })
   # On changes on b_cor
   observeEvent(input$b_cor, 
-               { update_border_colors(filtered_data()[current_index(),]) })
+               { update_border_colors(questions_data()[current_index(),]) })
   # On changes on c_cor
   observeEvent(input$c_cor, 
-               { update_border_colors(filtered_data()[current_index(),]) })
+               { update_border_colors(questions_data()[current_index(),]) })
   # On changes on d_cor
   observeEvent(input$d_cor, 
-               { update_border_colors(filtered_data()[current_index(),]) })
+               { update_border_colors(questions_data()[current_index(),]) })
 }
 
 
