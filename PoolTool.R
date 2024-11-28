@@ -1,3 +1,12 @@
+# TO DO
+# en/disable options based on question-type
+# -add new questions
+# -csv instead of xlsx
+# -delete question
+# -order questions
+# -filter function
+
+
 # 1. Load Ressources ####################
 ## 1.1 Load Packages ##########
 library(shiny)
@@ -321,6 +330,9 @@ server <- function(input, output, session) {
     
     # Call toggle_finalized-function to de/activate inputs
     toggle_finalized(question$State == "Finalized")
+    
+    update_answer_options(session, question)
+    
   })
 
     
@@ -375,6 +387,8 @@ server <- function(input, output, session) {
     
     # Call update_border_colors-function to update question colors
     update_border_colors(questions_data()[current_index(),])
+    
+    update_answer_options(session, questions_data()[current_index(),])
   })
   
   
@@ -603,8 +617,27 @@ server <- function(input, output, session) {
       lapply(input_ids, shinyjs::enable)
     }
   }
+  
+  
+  
+  
+  
+  #### 4.10.4 Update Options ##########
+  update_answer_options <- function(session, question) {
+    # Aktualisiert die Antwortoptionen basierend auf dem übergebenen Datensatz `question`
+    updateSelectInput(session, "a_cor", selected = question$A_cor)
+    updateSelectInput(session, "b_cor", selected = question$B_cor)
+    updateSelectInput(session, "c_cor", selected = question$C_cor)
+    updateSelectInput(session, "d_cor", selected = question$D_cor)
+    updateSelectInput(session, "a_type_cor", selected = question$A_type_cor)
+  }
 }
 
+  
+  
+  
+  
+  #### 4.10.3 En/Disable UI based on State ##########
 
 
 
