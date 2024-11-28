@@ -1,9 +1,10 @@
 # TO DO
-# -add new questions
 # -csv instead of xlsx
 # -delete question
-# -order questions
+# -Create new versions
 # -filter function
+# -Overview
+# -Export-function
 
 
 # 1. Load Ressources ####################
@@ -60,8 +61,21 @@ load_data <- function(folder_path = "Questions") {
   # Bind all data to one list
   combined_data <- bind_rows(data_list)
   
+  
+  # Ensure ID and other sorting columns are of the correct type
+  combined_data <- combined_data %>%
+    mutate(
+      ID = as.character(ID), # Ensure ID is character for sorting
+      Year = as.numeric(Year),
+      Chapter = as.numeric(Chapter)
+    )
+  
+  # Sort data by Year, ID, and Chapter
+  sorted_data <- combined_data %>%
+    arrange(Year, Chapter, ID)
+  
   # Return data
-  return(combined_data)
+  return(sorted_data)
 }
 
 
