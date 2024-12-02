@@ -16,6 +16,7 @@ library(readxl)
 library(readr)
 library(dplyr)
 library(writexl)
+library(DT)
 
 
 
@@ -94,7 +95,24 @@ Data <- load_data()
 
 
 # 3. Shiny UI ####################
-ui <- fluidPage(
+ui <- navbarPage(
+  "Pool-Tool",
+  tabPanel("Overview", fluidPage(
+    # Title for the Overview page
+    titlePanel("Overview of Questions"),
+    
+    # DataTable for displaying questions
+    fluidRow(
+      column(
+        12,
+        dataTableOutput("questions_table"),
+        style = "padding: 10px; margin: 10px;"
+      )
+    )
+  )), 
+  
+  tabPanel("Editor", fluidPage(
+    
   
   ## 3.1 General Settings ##########
   # Define Theme
@@ -282,6 +300,9 @@ ui <- fluidPage(
       )
     )
   )
+  )
+  )
+  
 
 
 
@@ -312,6 +333,15 @@ server <- function(input, output, session) {
   # Update UI text with current question and number of available questions
   output$question_counter <- renderText({
     paste(current_index(), "/", total_questions())
+  })
+  
+  
+  
+  
+  output$questions_table <- renderDataTable({
+    questions_data() %>%
+      # select(ID, Version, Type, Question, State, Year, Tags, Remarks) %>%
+      datatable(options = list(pageLength = 10, autoWidth = TRUE))
   })
   
   
