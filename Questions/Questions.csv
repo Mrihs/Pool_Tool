@@ -1,8 +1,12 @@
 ID,Version,Type,Question,A,B,C,D,E,A_type_cor,A_cor,B_cor,C_cor,D_cor,Year,Week,Chapter,State,Tags,Remarks
-2024001,1,A,Welche Hauptstadt gehört zu Frankreich?,Paris,London,Rom,Madrid,Bern,A,TRUE,TRUE,TRUE,TRUE,2024,1,1,Creating,,
+2024001,1,A,Welche Hauptstadt gehört zu Frankreich?,Paris,London,Rom,Madrid,Bern,A,TRUE,TRUE,TRUE,TRUE,2024,1,1,Creating,NA,NA
 2024006,1,K,Welche Stadt liegt in Frankreich?,Paris,Lille,Genf,Wien,NA,NA,TRUE,TRUE,FALSE,FALSE,2024,1,1,Review,NA,NA
 2024007,1,K,Welche Länder liegen in Europa?,Schweiz,USA,China,Estland,NA,NA,TRUE,FALSE,FALSE,TRUE,2024,2,2,Review,NA,NA
 2024003,1,A,Welches Tier ist ein Säugetier?,Krokodil,Hund,Falke,Karpfen,Huhn,B,NA,NA,NA,NA,2024,3,3,Review,NA,NA
 2024004,1,A,In welchem Kontinent liegt Ägypten?,Asien,Europa,Afrika,Australien,Arktis,C,NA,NA,NA,NA,2024,3,4,Creating,NA,NA
 2024002,1,A,Welche Farbe hat der Himmel bei klarem Wetter?,Blau,Grün,Rot,Gelb,Pink,A,NA,NA,NA,NA,2024,2,5,Creating,NA,NA
 2024005,1,A,Welches dieser Elemente ist ein Edelgas?,Sauerstoff,Stickstoff,Wasserstoff,Argon,Stickstoff,D,NA,NA,NA,NA,2024,4,5,Creating,NA,NA
+2024005,1,A,Welches dieser Elemente ist ein Edelgas?,Sauerstoff,Stickstoff,Wasserstoff,Argon,Stickstoff,D,TRUE,TRUE,TRUE,TRUE,2024,4,5,Creating,NA,NA
+20240008,1,A,asdf,aölkjdf,nlkn,lkö,nnlön,nkl,A,TRUE,TRUE,TRUE,TRUE,2024,NA,NA,Draft,NA,NA
+20240009,1,A,Wo liegt Berlin?,CH,DE,BE,LU,AT,B,TRUE,TRUE,TRUE,TRUE,2024,NA,NA,Draft,NA,NA
+2024005,1,A,Welches dieser Elemente ist ein Edelgas?,Sauerstoff,Stickstoff,Wasserstoff,Argon,Stickstoff,D,TRUE,TRUE,TRUE,TRUE,2024,4,5,Creating,,

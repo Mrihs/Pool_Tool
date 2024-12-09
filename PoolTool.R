@@ -658,15 +658,20 @@ server <- function(input, output, session) {
     questions_data(updated_data)
     
     # Find row-index for current question
-    row_in_Data <- which(Data$ID == questions_data()[idx, "ID"] & Data$Version == questions_data()[idx, "Version"])
-    
-    # Update data at current index
-    if (length(row_in_Data) == 1) {
-      Data[row_in_Data, ] <- questions_data()[idx, ]
-    }
-    
-    #Convert to dataframe
-    data_save <- as.data.frame(Data)
+    # row_in_Data <- which(Data$ID == questions_data()[idx, "ID"] & Data$Version == questions_data()[idx, "Version"])
+    # 
+    # if (length(row_in_Data) == 1) {
+    #   # Update existing entry in Data
+    #   Data[row_in_Data, ] <- questions_data()[idx, ]
+    # } else {
+    #   # Append new entry to Data if it doesn't exist
+    #   Data <- bind_rows(Data, questions_data()[idx, ])
+    # }
+    # 
+    # # Convert to dataframe
+    # data_save <- as.data.frame(Data)
+
+    data_save <- as.data.frame(questions_data())
     
     colnames(data_save) <- c("ID", "Version", "Type", "Question", "A", "B", "C", "D", "E", "A_type_cor",
                              "A_cor", "B_cor", "C_cor", "D_cor", "Year", "Week", "Chapter", "State", "Tags", "Remarks")
