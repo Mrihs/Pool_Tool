@@ -38,29 +38,13 @@ tags$head(tags$link(rel = "stylesheet",
 # 2. Load Questions ####################
 ## 2.1 Function to Load  <-  ##########
 load_data <- function(folder_path = "Questions") {
-  # Create a List of all excel- or csv-files
-  files <- list.files(folder_path, pattern = "\\.(xlsx)$", full.names = TRUE)
   
-  # Create a list for saving the data
-  data_list <- list()
-  
-  # For every excel- or csv-file
-  for (file in files) {
-    # Call function to read excel-file if file is of type .xlsx
-    if (grepl("\\.xlsx$", file)) {df <- read_excel(file)}
-    # Call function to read csv-file if file is of type .csv
-    else if (grepl("\\.csv$", file)) {df <- read_csv(file)}
-    
-    # Save the respective filename as a variable
-    # df$source_file <- basename(file)
-    
-    # Append data from file in data list
-    data_list[[length(data_list) + 1]] <- df
-  }
-  
-  # Bind all data to one list
-  combined_data <- bind_rows(data_list)
-  
+  combined_data <- read_csv("Questions/Questions.csv", 
+                        col_types = cols(E = col_character(), 
+                                         A_cor = col_character(), 
+                                         B_cor = col_character(), 
+                                         C_cor = col_character(), 
+                                         D_cor = col_character()))  
   
   # Ensure ID and other sorting columns are of the correct type
   combined_data <- combined_data %>%
@@ -684,7 +668,7 @@ server <- function(input, output, session) {
     #Convert to dataframe
     data_save <- as.data.frame(Data)
     
-    colnames(data_save) <- c("ID", "Version", "Type", "Question", "A", "B", "C", "D", "D", "A_type_cor",
+    colnames(data_save) <- c("ID", "Version", "Type", "Question", "A", "B", "C", "D", "E", "A_type_cor",
                              "A_cor", "B_cor", "C_cor", "D_cor", "Year", "Week", "Chapter", "State", "Tags", "Remarks")
     
     # Write csv
