@@ -52,7 +52,7 @@ load_data <- function(folder_path = "Questions") {
     else if (grepl("\\.csv$", file)) {df <- read_csv(file)}
     
     # Save the respective filename as a variable
-    df$source_file <- basename(file)
+    # df$source_file <- basename(file)
     
     # Append data from file in data list
     data_list[[length(data_list) + 1]] <- df
@@ -683,6 +683,9 @@ server <- function(input, output, session) {
     
     #Convert to dataframe
     data_save <- as.data.frame(Data)
+    
+    colnames(data_save) <- c("ID", "Version", "Type", "Question", "A", "B", "C", "D", "D", "A_type_cor",
+                             "A_cor", "B_cor", "C_cor", "D_cor", "Year", "Week", "Chapter", "State", "Tags", "Remarks")
     
     # Write csv
     write_csv(data_save, "Questions/Questions.csv")
