@@ -44,7 +44,9 @@ load_data <- function(folder_path = "Questions") {
                                          A_cor = col_character(), 
                                          B_cor = col_character(), 
                                          C_cor = col_character(), 
-                                         D_cor = col_character()))  
+                                         D_cor = col_character(),
+                                         Selection = col_logical()
+  ))  
   
   # Ensure ID and other sorting columns are of the correct type
   combined_data <- combined_data %>%
@@ -206,7 +208,7 @@ ui <- navbarPage(
       # Add dropdown for question-type
       column(1, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
       # Add column with textinput for question state
-      column(4, textInput("state", "State", value = "", width = "100%"))
+      column(3, textInput("state", "State", value = "", width = "100%"))
     ),
     
     
@@ -272,9 +274,11 @@ ui <- navbarPage(
       # Set style of row
       style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
       # Add column with textinput for tags for the question
-      column(6, textInput("tags", "Tags", value = "", width = "100%")),
+      column(4, textInput("tags", "Tags", value = "", width = "100%")),
       # Add column with textinput for remarks
-      column(6, textInput("remarks", "Remarks", value = "", width = "100%"))
+      column(5, textInput("remarks", "Remarks", value = "", width = "100%")),
+      # Add column with a checkbox for Selection status
+      column(2, checkboxInput("selection", "Select Question for Exams", value = FALSE, width = "100%"))
       )
     )
   )
@@ -355,6 +359,8 @@ server <- function(input, output, session) {
     updateTextInput(session, "state", value = question$State)
     updateTextInput(session, "tags", value = question$Tags)
     updateTextInput(session, "remarks", value = question$Remarks)
+    updateCheckboxInput(session, "selection", value = as.logical(question$Selection))
+    
     
     # Call update_border_colors-function to update question colors
     update_border_colors(question)
@@ -647,6 +653,7 @@ server <- function(input, output, session) {
     updated_data[idx, "State"] <- input$state
     updated_data[idx, "Tags"] <- input$tags
     updated_data[idx, "Remarks"] <- input$remarks
+    updated_data[idx, "Selection"] <- input$selection
     
     # Update question-data based on updated data
     questions_data(updated_data)
@@ -709,6 +716,7 @@ server <- function(input, output, session) {
     updated_data[idx, "State"] <- input$state
     updated_data[idx, "Tags"] <- input$tags
     updated_data[idx, "Remarks"] <- input$remarks
+    updated_data[idx, "Selection"] <- input$selection
     
     # Update questions_data with the updated data
     questions_data(updated_data)
