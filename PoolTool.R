@@ -82,6 +82,7 @@ Data <- load_data()
 
 # 3. Shiny UI ####################
 ui <- navbarPage(
+  id = "tabs",
   "Pool-Tool",
   tabPanel("Overview", fluidPage(
     # Title for the Overview page
@@ -349,7 +350,6 @@ server <- function(input, output, session) {
   output$questions_table <- renderDataTable({
     raw_data <- questions_data()
     
-    
     styled_data <- raw_data %>%
       mutate(
         # Einfärbung für Type K
@@ -392,16 +392,18 @@ server <- function(input, output, session) {
         E = ifelse(Type == "A", E_A, E)  # E nur für Typ A relevant
       )
     
-
+    # Nur die gewünschten Spalten auswählen
+    filtered_data <- styled_data  |> select(ID, Version, Type, Question, A, B, C, D, E, Year, Chapter, Selection)
     
+
     datatable(
-      styled_data,
+      filtered_data,
       options = list(
         pageLength = 10,
         autoWidth = TRUE,
         columnDefs = list(
           list(
-            targets = which(colnames(questions_data()) == "Selection"),
+            targets = which(colnames(filtered_data) == "Selection"),
             render = JS(
               "function(data, type, row, meta) {",
               "  if (type === 'display') {",
@@ -727,6 +729,19 @@ server <- function(input, output, session) {
     
     # Optional: Feedback an den Benutzer
     showNotification(paste("Row", change$row, "Selection updated to", change$checked), type = "message")
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  ## 4.12 When going to overview ##########
+  observeEvent(input$tabs, {
+    save_current_question()
   })
   
   
