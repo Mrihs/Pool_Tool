@@ -196,9 +196,15 @@ ui <- navbarPage(
       # Add column with textinput for question-id
       column(2, numericInput("question_id", "ID", value = "", width = "100%")),
       # Add column with textinput for question version
-      column(2, numericInput("question_version", "Version", value = "", width = "100%")),
+      column(1, numericInput("question_version", "Version", value = "", width = "100%")),
+      # Add column with textinput for year of question
+      column(2, numericInput("year", "Jahr", value = "", width = "100%")),
+      # Add column with textinput for week of question
+      column(1, numericInput("week", "Woche", value = "", width = "100%")),
+      # Add column with textinput for chapter of question
+      column(1, numericInput("chapter", "Kapitel", value = "", width = "100%")),
       # Add dropdown for question-type
-      column(4, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
+      column(1, selectInput("type", "Type", choices = c("A", "K"), selected = "A", width = "100%")),
       # Add column with textinput for question state
       column(4, textInput("state", "State", value = "", width = "100%"))
     ),
@@ -262,18 +268,6 @@ ui <- navbarPage(
     
     ### 3.3.3 Set Meta Data UI ##########
     # Create row
-    fluidRow(
-      # Set style of row
-      style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
-      # Add column with textinput for year of question
-      column(4, numericInput("year", "Jahr", value = "", width = "100%")),
-      # Add column with textinput for week of question
-      column(4, numericInput("week", "Woche", value = "", width = "100%")),
-      # Add column with textinput for chapter of question
-      column(4, numericInput("chapter", "Kapitel", value = "", width = "100%"))
-    ),
-    
-    # Create second row
     fluidRow(
       # Set style of row
       style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
