@@ -321,11 +321,35 @@ server <- function(input, output, session) {
   
   
   output$questions_table <- renderDataTable({
-    questions_data() %>%
-      # select(ID, Version, Type, Question, State, Year, Tags, Remarks) %>%
-      datatable(options = list(pageLength = 10, autoWidth = TRUE))
+    datatable(
+      questions_data(),
+      options = list(
+        pageLength = 10,
+        autoWidth = TRUE,
+        columnDefs = list(
+          list(
+            targets = which(colnames(questions_data()) == "Selection"),
+            render = JS(
+              "function(data, type, row, meta) {",
+              "  if (type === 'display') {",
+              "    return '<input type=\"checkbox\" class=\"dt-checkbox\" data-row=\"' + meta.row + '\" ' + (data ? 'checked' : '') + ' />';",
+              "  }",
+              "  return data;",
+              "}"
+            )
+          )
+        )
+      ),
+      escape = FALSE,
+      callback = JS(
+        "table.on('change', 'input.dt-checkbox', function() {",
+        "  var row = $(this).data('row');",
+        "  var checked = $(this).prop('checked');",
+        "  Shiny.setInputValue('table_checkbox_changed', {row: row + 1, checked: checked}, {priority: 'event'});",
+        "});"
+      )
+    )
   })
-  
   
   
   
@@ -614,6 +638,27 @@ server <- function(input, output, session) {
   
   
   
+  
+  
+  
+  
+  
+  ## 4.11 Update on Changes in Datatable ##########
+  observeEvent(input$table_checkbox_changed, {
+    change <- input$table_checkbox_changed
+    updated_data <- questions_data()
+    
+    # Aktualisiere die entsprechende Zeile, ohne die Spalte direkt zu verändern
+    updated_data[change$row, "Selection"] <- change$checked
+    questions_data(updated_data)
+    
+    # Optional: Feedback an den Benutzer
+    showNotification(paste("Row", change$row, "Selection updated to", change$checked), type = "message")
+  })
+  
+  
+  
+  
   ## 4.18 Deactivate UI based on Question Type on start ##########
   # Add a Delay
   shinyjs::delay(150, {
@@ -655,6 +700,10 @@ server <- function(input, output, session) {
     updated_data[idx, "Remarks"] <- input$remarks
     updated_data[idx, "Selection"] <- input$selection
     
+    # Convert logical columns to character for proper saving
+    updated_data <- updated_data %>%
+      mutate(across(where(is.logical), ~ ifelse(.x, "TRUE", "FALSE")))
+    
     # Update question-data based on updated data
     questions_data(updated_data)
     
@@ -675,7 +724,9 @@ server <- function(input, output, session) {
     data_save <- as.data.frame(questions_data())
     
     colnames(data_save) <- c("ID", "Version", "Type", "Question", "A", "B", "C", "D", "E", "A_type_cor",
-                             "A_cor", "B_cor", "C_cor", "D_cor", "Year", "Week", "Chapter", "State", "Tags", "Remarks")
+                             "A_cor", "B_cor", "C_cor", "D_cor", "Year", "Week", "Chapter", "State", "Tags", "Remarks", "Selection")
+    
+    showNotification(paste(colnames(data_save), collapse = ", "), type = "message")
     
     # Write csv
     write_csv(data_save, "Questions/Questions.csv")
