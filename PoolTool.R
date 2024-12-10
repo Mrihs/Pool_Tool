@@ -230,39 +230,65 @@ ui <- navbarPage(
     fluidRow(
       # Set style of row
       style = "background-color: #f0f0f0; padding: 10px; margin: 10px; border-radius: 5px;",
+      
+      fluidRow(
+        column(9,
+               # Add textinput for option a
+               textAreaInput("option_a", "A", value = "", width = "100%")),
+        column(3,               
+               # Add dropdown for solution on option a
+               selectInput("a_cor", "A correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
+               )
+        ),
+      fluidRow(
+        column(9,
+               # Add textinput for option b
+               textAreaInput("option_b", "B", value = "", width = "100%")
+        ),
+        column(3,
+               # Add dropdown for solution on option b
+               selectInput("b_cor", "B correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
+               )
+        ),
+      fluidRow(
+        column(9,
+               # Add textinput for option c
+               textAreaInput("option_c", "C", value = "", width = "100%"),
+               ),
+        column(3,
+               # Add dropdown for solution on option c
+               selectInput("c_cor", "C correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
+               )
+        ),
+      fluidRow(
+        column(9,
+               # Add textinput for option d
+               textAreaInput("option_d", "D", value = "", width = "100%")
+               ),
+        column(3,
+               # Add dropdown for solution on option d
+               selectInput("d_cor", "D correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%")
+               )
+        ),
+      fluidRow(
+        column(9,
+               # Add textinput for option e
+               textAreaInput("option_e", "E", value = "", width = "100%")
+               ),
+        column(3,
+               # Add dropdown for solution on answers of Type A
+               selectInput("a_type_cor", "Correct Answer", choices = c("A", "B", "C", "D", "E"), selected = NULL, width = "100%")
+               )
+        )
+      )
+  ),
+      
 
             
-      #### 3.3.2.2 Set Options UI ##########
-      # Create column for answer options
-      column(9,
-             # Add textinput for option a
-             textInput("option_a", "A", value = "", width = "100%"),
-             # Add textinput for option b
-             textInput("option_b", "B", value = "", width = "100%"),
-             # Add textinput for option c
-             textInput("option_c", "C", value = "", width = "100%"),
-             # Add textinput for option d
-             textInput("option_d", "D", value = "", width = "100%"),
-             # Add textinput for option e
-             textInput("option_e", "E", value = "", width = "100%")
-      ),
 
 
-      #### 3.3.2.3 Set Solutions UI ##########
-      # Create column for solutions
-      column(3,
-             # Add dropdown for solution on option a
-             selectInput("a_cor", "A correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-             # Add dropdown for solution on option b
-             selectInput("b_cor", "B correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-             # Add dropdown for solution on option c
-             selectInput("c_cor", "C correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-             # Add dropdown for solution on option d
-             selectInput("d_cor", "D correct?", choices = c("TRUE", "FALSE"), selected = NULL, width = "100%"),
-             # Add dropdown for solution on answers of Type A
-             selectInput("a_type_cor", "Correct Answer", choices = c("A", "B", "C", "D", "E"), selected = NULL, width = "100%")
-             )
-      ),
+
+
     
     
     
@@ -283,7 +309,7 @@ ui <- navbarPage(
     )
   )
   )
-  )
+
   
 
 
