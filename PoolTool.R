@@ -347,8 +347,55 @@ server <- function(input, output, session) {
   
   
   output$questions_table <- renderDataTable({
+    raw_data <- questions_data()
+    
+    
+    styled_data <- raw_data %>%
+      mutate(
+        # Einfärbung für Type K
+        A_K = ifelse(Type == "K" & !is.na(A_cor) & A_cor == "TRUE", 
+                     sprintf('<span style="color:green">%s</span>', A), 
+                     sprintf('<span style="color:red">%s</span>', A)),
+        B_K = ifelse(Type == "K" & !is.na(B_cor) & B_cor == "TRUE", 
+                     sprintf('<span style="color:green">%s</span>', B), 
+                     sprintf('<span style="color:red">%s</span>', B)),
+        C_K = ifelse(Type == "K" & !is.na(C_cor) & C_cor == "TRUE", 
+                     sprintf('<span style="color:green">%s</span>', C), 
+                     sprintf('<span style="color:red">%s</span>', C)),
+        D_K = ifelse(Type == "K" & !is.na(D_cor) & D_cor == "TRUE", 
+                     sprintf('<span style="color:green">%s</span>', D), 
+                     sprintf('<span style="color:red">%s</span>', D)),
+        
+        # Einfärbung für Type A
+        A_A = ifelse(Type == "A" & !is.na(A_type_cor) & A_type_cor == "A", 
+                     sprintf('<span style="color:green">%s</span>', A), 
+                     sprintf('<span style="color:red">%s</span>', A)),
+        B_A = ifelse(Type == "A" & !is.na(A_type_cor) & A_type_cor == "B", 
+                     sprintf('<span style="color:green">%s</span>', B), 
+                     sprintf('<span style="color:red">%s</span>', B)),
+        C_A = ifelse(Type == "A" & !is.na(A_type_cor) & A_type_cor == "C", 
+                     sprintf('<span style="color:green">%s</span>', C), 
+                     sprintf('<span style="color:red">%s</span>', C)),
+        D_A = ifelse(Type == "A" & !is.na(A_type_cor) & A_type_cor == "D", 
+                     sprintf('<span style="color:green">%s</span>', D), 
+                     sprintf('<span style="color:red">%s</span>', D)),
+        E_A = ifelse(Type == "A" & !is.na(A_type_cor) & A_type_cor == "E", 
+                     sprintf('<span style="color:green">%s</span>', E), 
+                     sprintf('<span style="color:red">%s</span>', E))
+      ) %>%
+      mutate(
+        # Zusammenführung: Verwende die entsprechende Einfärbung je nach Typ
+        A = ifelse(Type == "A", A_A, A_K),
+        B = ifelse(Type == "A", B_A, B_K),
+        C = ifelse(Type == "A", C_A, C_K),
+        D = ifelse(Type == "A", D_A, D_K),
+        E = ifelse(Type == "A", E_A, E)  # E nur für Typ A relevant
+      )
+    
+
+    
     datatable(
-      questions_data(),
+      styled_data,
       options = list(
         pageLength = 10,
         autoWidth = TRUE,
